@@ -1,0 +1,30 @@
+{
+  "name": "flyntos",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.6.3",
+  "scripts": {
+    "dev": "corepack pnpm -r --parallel --filter @flyntos/web --filter @flyntos/api --filter @flyntos/worker dev",
+    "dev:web": "corepack pnpm --filter @flyntos/web dev",
+    "dev:api": "corepack pnpm --filter @flyntos/api dev",
+    "dev:worker": "corepack pnpm --filter @flyntos/worker dev",
+    "build": "corepack pnpm -r build",
+    "lint": "corepack pnpm -r lint",
+    "typecheck": "corepack pnpm -r typecheck",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "autoprefixer": "^10.4.27",
+    "eslint": "^9.23.0",
+    "eslint-config-next": "^15.2.4",
+    "postcss": "^8.5.8",
+    "prettier": "^3.5.3",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}
+

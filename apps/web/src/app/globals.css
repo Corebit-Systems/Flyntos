@@ -1,0 +1,5 @@
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;min-height:100%}
+body{font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:#050816;color:#f8fafc}
+a{text-decoration:none;color:inherit}

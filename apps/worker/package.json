@@ -1,0 +1,8 @@
+{
+  "name": "@flyntos/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "tsx watch src/index.ts", "build": "tsc -p tsconfig.json", "start": "node dist/index.js", "lint": "tsc -p tsconfig.json --noEmit", "typecheck": "tsc -p tsconfig.json --noEmit" },
+  "dependencies": { "bullmq": "^5.43.0", "@flyntos/config": "workspace:*", "@flyntos/shared": "workspace:*" }
+}

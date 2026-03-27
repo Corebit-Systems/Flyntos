@@ -1,0 +1,16 @@
+﻿import Fastify from 'fastify';
+import cors from '@fastify/cors';
+import { envSchema } from './lib/search-schema';
+import { healthRoutes } from './routes/health';
+import { configRoutes } from './routes/config';
+import { providerRoutes } from './routes/providers';
+import { searchRoutes } from './routes/search';
+const env=envSchema.parse(process.env);
+const app=Fastify({logger:true});
+await app.register(cors,{origin:env.APP_BASE_URL});
+await app.register(healthRoutes);
+await app.register(configRoutes);
+await app.register(providerRoutes);
+await app.register(searchRoutes);
+app.setErrorHandler((error,_request,reply)=>reply.code(400).send({message:'Request failed safely',detail:error instanceof Error ? error.message : 'Unknown error'}));
+app.listen({port:env.API_PORT,host:'0.0.0.0'}).then(()=>app.log.info('Flyntos API listening on '+env.API_PORT));

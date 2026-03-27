@@ -1,0 +1,14 @@
+﻿import{z}from'zod';
+export const searchScenarioSchema=z.enum(['standard','cheapest','best','weekend','family','business','direct-priority']);
+export type SearchScenarioType=z.infer<typeof searchScenarioSchema>;
+export const cabinSchema=z.enum(['economy','premium-economy','business','first']);
+export const locationSchema=z.object({code:z.string().min(2).max(5),type:z.enum(['airport','city','country']),label:z.string().min(1)});
+export const canonicalSearchRequestSchema=z.object({origin:locationSchema,destination:locationSchema,departureDate:z.string(),returnDate:z.string().optional(),passengers:z.object({adults:z.number().int().min(1).max(9),children:z.number().int().min(0).max(8).default(0),infants:z.number().int().min(0).max(4).default(0)}),cabin:cabinSchema.default('economy'),locale:z.string(),market:z.string(),currency:z.string(),scenario:searchScenarioSchema.default('standard')});
+export type CanonicalSearchRequest=z.infer<typeof canonicalSearchRequestSchema>;
+export type CanonicalOffer={id:string;provider:string;clickoutUrl:string;price:{currency:string;total:number};baggage:{summary:string};refundable:boolean;selfTransfer:boolean;score?:number};
+export type CanonicalLeg={id:string;origin:string;destination:string;departureAt:string;arrivalAt:string;marketingCarrier:string;flightNumber:string;durationMinutes:number;cabin:string};
+export type CanonicalSegment={id:string;origin:string;destination:string;departureAt:string;arrivalAt:string;durationMinutes:number;stops:number;legs:CanonicalLeg[]};
+export type ProviderMetadata={provider:string;capabilities:string[];latencyMs:number;cacheHit:boolean;partial:boolean};
+export type CanonicalItinerary={id:string;routeSignature:string;segments:CanonicalSegment[];offers:CanonicalOffer[];baggageSummary:string;totalDurationMinutes:number;stops:number;rankingScore:number;bestOffer:CanonicalOffer;providerMetadata:ProviderMetadata[]};
+export type SearchDiagnostics={searchId:string;providerCount:number;providerFailures:{provider:string;message:string}[];latencyMs:number;dedupeRatio:number;cacheStatus:'miss'|'partial-hit'|'hit';notes:string[]};
+export type SearchResponse={id:string;request:CanonicalSearchRequest;itineraries:CanonicalItinerary[];diagnostics:SearchDiagnostics;generatedAt:string};

@@ -1,0 +1,2 @@
+const API_BASE=process.env.API_BASE_URL||'http://localhost:4000';
+export async function searchFlights(payload:{origin:string;destination:string;departureDate:string;returnDate?:string | undefined;locale:string;scenario?:string;}){const res=await fetch(API_BASE+'/search',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload),cache:'no-store'});if(!res.ok)throw new Error('Search request failed');return res.json();}

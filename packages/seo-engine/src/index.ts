@@ -1,0 +1,4 @@
+﻿import{defaultLocale,localeCodes}from'@flyntos/config';import{buildRoute}from'@flyntos/shared';
+export const canonicalUrl=(baseUrl:string,path:string)=>new URL(path,baseUrl).toString();
+export const buildSeoMetadata=(locale:string,path:string,title:string,description:string,baseUrl:string)=>({title,description,alternates:{canonical:canonicalUrl(baseUrl,buildRoute(locale,path)),languages:Object.fromEntries([...localeCodes.map(code=>[code,canonicalUrl(baseUrl,buildRoute(code,path))]),['x-default',canonicalUrl(baseUrl,buildRoute(defaultLocale,path))]])}});
+export const websiteJsonLd=(baseUrl:string)=>({'@context':'https://schema.org','@type':'WebSite',name:'Flyntos',url:baseUrl,potentialAction:{'@type':'SearchAction',target:`${baseUrl}/{locale}/results?from={origin}&to={destination}&depart={departureDate}`,'query-input':['required name=origin','required name=destination','required name=departureDate']}});
