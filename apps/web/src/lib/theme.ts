@@ -1,0 +1,2 @@
+﻿export const theme={colors:{bg:'#050816',panel:'rgba(255,255,255,.06)',line:'rgba(255,255,255,.12)',text:'#f8fafc',muted:'#94a3b8',accent:'#8ea0ff',accent2:'#57d7c8',danger:'#fca5a5'},radius:{lg:22,xl:28,pill:999},shadow:'0 24px 80px rgba(2,6,23,.5)',container:{width:'min(1180px,calc(100% - 32px))',margin:'0 auto'}} as const;
+export const glassPanel={border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.06)',backdropFilter:'blur(18px)',boxShadow:'0 24px 80px rgba(2,6,23,.5)'} as const;

@@ -1,0 +1,1 @@
+export default function Loading(){ return <section style={{padding:'36px 0 64px'}}><div style={{width:'min(1180px,calc(100% - 32px))',margin:'0 auto',border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.06)',borderRadius:28,padding:28,color:'#94a3b8'}}>Loading flights...</div></section>; }

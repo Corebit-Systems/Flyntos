@@ -1,3 +1,2 @@
-export function Header({ locale, brand }: { locale: string; brand: string }){
-return <header><div><a href={'/'+locale}>{brand}</a><nav><a href={'/'+locale}>Home</a> <a href={'/'+locale+'/results'}>Results</a></nav></div></header>;
-}
+﻿import { LocaleSwitcher } from './locale-switcher';
+export function Header({ locale, brand }: { locale: string; brand: string }) { return <header style={{position:'sticky',top:0,zIndex:20,borderBottom:'1px solid rgba(255,255,255,.08)',background:'rgba(3,7,18,.7)',backdropFilter:'blur(18px)'}}><div style={{width:'min(1180px,calc(100% - 32px))',margin:'0 auto',minHeight:74,display:'flex',alignItems:'center',justifyContent:'space-between',gap:20,flexWrap:'wrap'}}><div style={{display:'flex',alignItems:'center',gap:16}}><a href={'/'+locale} style={{fontWeight:700,letterSpacing:'.26em',textTransform:'uppercase'}}>{brand}</a><nav style={{display:'flex',gap:14,color:'#94a3b8',fontSize:14}}><a href={'/'+locale}>Home</a><a href={'/'+locale+'/results'}>Results</a></nav></div><LocaleSwitcher currentLocale={locale} /></div></header>; }

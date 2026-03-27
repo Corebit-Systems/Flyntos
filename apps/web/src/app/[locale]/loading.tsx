@@ -1,0 +1,1 @@
+export default function Loading(){ return <section style={{padding:'72px 0 56px'}}><div style={{width:'min(1180px,calc(100% - 32px))',margin:'0 auto',color:'#94a3b8'}}>Loading locale experience...</div></section>; }

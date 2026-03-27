@@ -1,3 +1,1 @@
-export function Footer({ locale }: { locale: string }){
-return <footer><div><span>Flyntos. Premium search orchestration foundation.</span> <a href={'/'+locale}>Home</a></div></footer>;
-}
+﻿export function Footer({ locale }: { locale: string }) { return <footer style={{borderTop:'1px solid rgba(255,255,255,.08)',padding:'38px 0',color:'#94a3b8'}}><div style={{width:'min(1180px,calc(100% - 32px))',margin:'0 auto',display:'flex',justifyContent:'space-between',gap:20,flexWrap:'wrap'}}><div><div style={{fontWeight:600,color:'#f8fafc'}}>Flyntos</div><div>Search orchestration foundation with premium locale-aware UX.</div></div><div style={{display:'flex',gap:14}}><a href={'/'+locale}>Home</a><a href={'/'+locale+'/results'}>Results</a></div></div></footer>; }
