@@ -1,0 +1,372 @@
+==================================================
+PROJECT TECHNICAL HANDOFF
+==================================================
+
+Project name: Flyntos
+Project type: Monorepo web platform foundation
+Repository structure type: Monorepo
+Primary stack: TypeScript, Next.js 15, React 19, Fastify 5, Zod, BullMQ, pnpm workspaces, Tailwind CSS
+Package manager: pnpm
+Runtime(s): Node.js
+Main deployment style: Docker Compose plus per-service Dockerfiles
+Architecture style: Shared-contract monorepo with web, API, and worker services
+
+==================================================
+1. EXECUTIVE SUMMARY
+==================================================
+
+Flyntos is an early-stage flight-search platform foundation. The repository currently contains:
+- a Next.js web app in `apps/web`
+- a Fastify API in `apps/api`
+- a BullMQ worker scaffold in `apps/worker`
+- shared internal packages in `packages/*`
+
+Current real behavior:
+- locale-aware web routes render landing and results pages
+- results page sends a POST request to the API
+- API validates the request, normalizes it into a canonical search contract, calls mock providers, filters and ranks results, and returns mock itineraries
+- worker only registers queue names and logs TODO text
+
+Current missing pieces:
+- no real provider integrations
+- no DB usage in code
+- no auth
+- no tests
+- no CI
+- no job processors
+
+Most important files:
+- `packages/search-contracts/src/index.ts`
+- `packages/config/src/index.ts`
+- `apps/api/src/lib/mock-search.ts`
+- `apps/api/src/lib/rank-results.ts`
+- `apps/api/src/lib/filter-results.ts`
+- `apps/api/src/lib/search-schema.ts`
+- `apps/api/src/index.ts`
+- `apps/web/src/app/[locale]/results/page.tsx`
+- `apps/web/src/lib/api.ts`
+- `tsconfig.base.json`
+
+==================================================
+2. REPOSITORY MAP
+==================================================
+
+.
+  .editorconfig
+  .env.example
+  .eslintrc.cjs
+  .gitignore
+  README.md
+  docker-compose.yml
+  package.json
+  pnpm-lock.yaml
+  pnpm-workspace.yaml
+  prettier.config.cjs
+  tsconfig.base.json
+  apps
+    api
+      .env.example
+      package.json
+      tsconfig.json
+      src
+        index.ts
+        lib
+          filter-results.ts
+          mock-search.ts
+          rank-results.ts
+          search-schema.ts
+        routes
+          config.ts
+          health.ts
+          providers.ts
+          search.ts
+    web
+      .env.example
+      next-env.d.ts
+      next.config.mjs
+      package.json
+      postcss.config.js
+      tailwind.config.ts
+      tsconfig.json
+      src
+        app
+          globals.css
+          layout.tsx
+          page.tsx
+          [locale]
+            layout.tsx
+            loading.tsx
+            page.tsx
+            results
+              loading.tsx
+              page.tsx
+        components
+          layout
+            footer.tsx
+            header.tsx
+            locale-switcher.tsx
+          search
+            filter-sidebar.tsx
+            result-card.tsx
+            scenario-switcher.tsx
+            search-form.tsx
+        lib
+          api.ts
+          get-locale.ts
+          search-state.ts
+          theme.ts
+    worker
+      .env.example
+      package.json
+      tsconfig.json
+      src
+        index.ts
+  packages
+    config
+      src
+        index.ts
+    i18n
+      src
+        index.ts
+    provider-sdk
+      src
+        index.ts
+    search-contracts
+      src
+        index.ts
+    seo-engine
+      src
+        index.ts
+    shared
+      src
+        index.ts
+    ui
+      src
+        index.tsx
+  docker
+    api.Dockerfile
+    web.Dockerfile
+    worker.Dockerfile
+
+==================================================
+3. ARCHITECTURE MAP
+==================================================
+
+[LAYER] UI / presentation
+Main files: `apps/web/src/app/*`, `apps/web/src/components/*`
+Notes: Mostly server-rendered, inline-style-heavy, locale-aware.
+
+[LAYER] routing
+Main files: `apps/web/src/app/page.tsx`, `apps/web/src/app/[locale]/*`
+Notes: No Next middleware; locale handling is route-level.
+
+[LAYER] API transport
+Main files: `apps/api/src/index.ts`, `apps/api/src/routes/*`
+Notes: Thin Fastify routes over search logic.
+
+[LAYER] business logic
+Main files: `apps/api/src/lib/mock-search.ts`, `rank-results.ts`, `filter-results.ts`
+Notes: This is the core product behavior today.
+
+[LAYER] shared contracts/config
+Main files: `packages/search-contracts/src/index.ts`, `packages/config/src/index.ts`
+Notes: Highest blast radius in the repo.
+
+[LAYER] localization/content
+Main files: `packages/i18n/src/index.ts`, `apps/web/src/lib/get-locale.ts`
+Notes: Locale list is broader than UI-exposed locales.
+
+[LAYER] worker/background
+Main files: `apps/worker/src/index.ts`
+Notes: Queue registration only; no processors.
+
+[LAYER] infra/deployment
+Main files: `docker-compose.yml`, `docker/*.Dockerfile`, root manifests/config
+Notes: Compose provisions more infra than the code currently uses.
+
+==================================================
+4. CRITICAL PATHS
+==================================================
+
+[CRITICAL PATH] search request lifecycle
+Flow:
+1. User submits GET form in `apps/web/src/components/search/search-form.tsx`
+2. Browser navigates to `/:locale/results?...`
+3. `apps/web/src/app/[locale]/results/page.tsx` parses query params and builds payload
+4. `apps/web/src/lib/api.ts` POSTs to API `/search`
+5. `apps/api/src/routes/search.ts` validates request with `searchInputSchema`
+6. `apps/api/src/lib/mock-search.ts` normalizes request, calls mock providers, filters and ranks results
+7. Results are returned and rendered with `ResultCard`
+
+[CRITICAL PATH] app boot
+Flow:
+- root `package.json` scripts
+- child app scripts
+- Next boot in `apps/web`
+- Fastify boot in `apps/api/src/index.ts`
+- worker boot in `apps/worker/src/index.ts`
+
+[CRITICAL PATH] locale path
+Flow:
+- locale segment -> `apps/web/src/lib/get-locale.ts`
+- dictionary lookup in `packages/i18n/src/index.ts`
+- locale layout render in `apps/web/src/app/[locale]/layout.tsx`
+
+==================================================
+5. HIGH-RISK AREAS
+==================================================
+
+[RISK AREA] `apps/api/src/lib/mock-search.ts`
+Problem: Too many responsibilities in one file.
+
+[RISK AREA] `apps/web/src/app/[locale]/results/page.tsx`
+Problem: Controller logic and rendering logic are mixed.
+
+[RISK AREA] `packages/config/src/index.ts`
+Problem: Shared locale/scenario/queue config affects multiple services.
+
+[RISK AREA] `packages/search-contracts/src/index.ts`
+Problem: Shared canonical contract affects API and future integrations.
+
+[RISK AREA] `apps/api/src/lib/rank-results.ts`
+Problem: Ranking behavior is product-critical and separate from scenario config copy.
+
+[RISK AREA] `apps/api/src/lib/filter-results.ts`
+Problem: Filter semantics can drift from web-side query parsing.
+
+[RISK AREA] `apps/web/src/lib/search-state.ts`
+Problem: Duplicates filter semantics separately from API schemas.
+
+[RISK AREA] `apps/api/src/index.ts`
+Problem: Global error handler turns all errors into HTTP 400.
+
+[RISK AREA] `apps/worker/src/index.ts`
+Problem: Worker appears present but does not process jobs.
+
+[RISK AREA] `.gitignore`
+Problem: Ignores `pnpm-lock.yaml` even though lockfile exists.
+
+==================================================
+6. ENVIRONMENT AND INFRA
+==================================================
+
+Referenced env vars in code:
+- `API_PORT`
+- `APP_BASE_URL`
+- `API_BASE_URL`
+- `REDIS_URL`
+
+Documented but not actively used in code:
+- `NODE_ENV`
+- `LOG_LEVEL`
+- `WEB_PORT`
+- `DATABASE_URL`
+- `SENTRY_DSN`
+- `POSTHOG_KEY`
+- `CSP_REPORT_URI`
+- `NEXT_PUBLIC_APP_URL`
+
+Infra notes:
+- `docker-compose.yml` starts Postgres, Redis, API, worker, and web
+- Postgres is provisioned but unused by current code
+- Redis is only used by BullMQ queue registration
+- Dockerfiles are single-stage and straightforward
+
+==================================================
+7. VERIFICATION NOTES
+==================================================
+
+Verified directly:
+- `tsc.cmd -p apps/api/tsconfig.json --noEmit`
+- `tsc.cmd -p apps/web/tsconfig.json --noEmit`
+- `tsc.cmd -p apps/worker/tsconfig.json --noEmit`
+- `tsc.cmd -p packages/config/tsconfig.json --noEmit`
+- `tsc.cmd -p packages/i18n/tsconfig.json --noEmit`
+- `tsc.cmd -p packages/provider-sdk/tsconfig.json --noEmit`
+- `tsc.cmd -p packages/search-contracts/tsconfig.json --noEmit`
+- `tsc.cmd -p packages/seo-engine/tsconfig.json --noEmit`
+- `tsc.cmd -p packages/shared/tsconfig.json --noEmit`
+- `tsc.cmd -p packages/ui/tsconfig.json --noEmit`
+
+Environment limitation:
+- root `pnpm -r build` and `pnpm -r typecheck` hit local `spawn EPERM` in this environment
+
+Testing status:
+- no first-party tests found
+
+==================================================
+8. SAFE EDITING GUIDE
+==================================================
+
+Safe to edit:
+- `README.md`
+- copy in `packages/i18n/src/index.ts`
+- simple presentational web components
+
+Edit with caution:
+- `apps/web/src/components/search/*`
+- `apps/web/src/lib/search-state.ts`
+- `apps/web/src/lib/get-locale.ts`
+- `apps/web/next.config.mjs`
+- `docker-compose.yml`
+
+Only edit with full understanding:
+- `tsconfig.base.json`
+- `pnpm-workspace.yaml`
+- `packages/search-contracts/src/index.ts`
+- `packages/config/src/index.ts`
+- `apps/api/src/index.ts`
+- `apps/api/src/lib/mock-search.ts`
+- `apps/api/src/lib/rank-results.ts`
+- `apps/api/src/lib/filter-results.ts`
+- `apps/web/src/app/[locale]/results/page.tsx`
+
+Suggested reading order:
+1. `README.md`
+2. `package.json`
+3. `pnpm-workspace.yaml`
+4. `tsconfig.base.json`
+5. `packages/search-contracts/src/index.ts`
+6. `packages/config/src/index.ts`
+7. `apps/api/src/index.ts`
+8. `apps/api/src/lib/mock-search.ts`
+9. `apps/web/src/app/[locale]/results/page.tsx`
+10. `apps/worker/src/index.ts`
+
+==================================================
+9. ONBOARDING NOTES
+==================================================
+
+First commands:
+- `corepack pnpm install`
+- `corepack pnpm dev`
+- `corepack pnpm --filter @flyntos/web dev`
+- `corepack pnpm --filter @flyntos/api dev`
+- `corepack pnpm --filter @flyntos/worker dev`
+- `docker compose up --build`
+
+Where to start for UI issues:
+- `apps/web/src/app/[locale]/results/page.tsx`
+- `apps/web/src/components/search/*`
+
+Where to start for API issues:
+- `apps/api/src/routes/search.ts`
+- `apps/api/src/lib/mock-search.ts`
+- `apps/api/src/lib/search-schema.ts`
+
+Where to start for business logic:
+- `apps/api/src/lib/rank-results.ts`
+- `apps/api/src/lib/filter-results.ts`
+- `packages/config/src/index.ts`
+- `packages/search-contracts/src/index.ts`
+
+Where to start for deployment:
+- `docker-compose.yml`
+- `docker/*.Dockerfile`
+- root and app `package.json` files
+
+==================================================
+10. PROJECT SUMMARY
+==================================================
+
+Flyntos is a well-structured but still early monorepo foundation for a locale-aware flight search product. The most mature path is the search demo flow from web form to API validation to mock-provider orchestration to ranked results rendering. The codebase has solid shared contracts and config boundaries, but many important systems are still placeholders: real providers, DB access, auth, background processing, testing, and CI. Use this file as the baseline project map, and update it incrementally when architecture changes.
