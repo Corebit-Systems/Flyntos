@@ -1,2 +1,61 @@
-﻿import { scenarios } from '@flyntos/config';
-export function SearchForm({ locale, labels }: { locale: string; labels: any }) { const scenarioOptions=Object.values(scenarios); return <form action={'/'+locale+'/results'} method='get'><div style={{display:'grid',gridTemplateColumns:'repeat(4,minmax(0,1fr)) auto',gap:14,alignItems:'end'}}><label style={{display:'grid',gap:8}}><span style={{color:'#94a3b8',fontSize:12,letterSpacing:'.16em',textTransform:'uppercase'}}>{labels.from}</span><input style={{height:50,padding:'0 14px',borderRadius:18,border:'1px solid rgba(255,255,255,.12)',background:'rgba(2,6,23,.48)',color:'#f8fafc'}} name='origin' placeholder='SOF' required /></label><label style={{display:'grid',gap:8}}><span style={{color:'#94a3b8',fontSize:12,letterSpacing:'.16em',textTransform:'uppercase'}}>{labels.to}</span><input style={{height:50,padding:'0 14px',borderRadius:18,border:'1px solid rgba(255,255,255,.12)',background:'rgba(2,6,23,.48)',color:'#f8fafc'}} name='destination' placeholder='MAD' required /></label><label style={{display:'grid',gap:8}}><span style={{color:'#94a3b8',fontSize:12,letterSpacing:'.16em',textTransform:'uppercase'}}>{labels.depart}</span><input style={{height:50,padding:'0 14px',borderRadius:18,border:'1px solid rgba(255,255,255,.12)',background:'rgba(2,6,23,.48)',color:'#f8fafc'}} name='departureDate' type='date' required /></label><label style={{display:'grid',gap:8}}><span style={{color:'#94a3b8',fontSize:12,letterSpacing:'.16em',textTransform:'uppercase'}}>{labels.return}</span><input style={{height:50,padding:'0 14px',borderRadius:18,border:'1px solid rgba(255,255,255,.12)',background:'rgba(2,6,23,.48)',color:'#f8fafc'}} name='returnDate' type='date' /></label><button style={{height:50,border:'none',borderRadius:18,padding:'0 22px',background:'linear-gradient(135deg,#8ea0ff,#57d7c8)',color:'#031018',fontWeight:700,cursor:'pointer'}} type='submit'>{labels.cta}</button></div><div style={{marginTop:16,display:'grid',gap:8}}><span style={{color:'#94a3b8',fontSize:12,letterSpacing:'.16em',textTransform:'uppercase'}}>Scenario</span><div style={{display:'flex',flexWrap:'wrap',gap:10}}>{scenarioOptions.map(item=><label key={item.type} style={{padding:'8px 12px',borderRadius:999,border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.03)',color:'#cbd5e1',fontSize:13}}><input defaultChecked={item.type==='standard'} type='radio' name='scenario' value={item.type} style={{marginRight:8}} />{item.label}</label>)}</div></div></form>; }
+import { scenarios } from '@flyntos/config';
+
+export function SearchForm({ locale, labels }: { locale: string; labels: any }) {
+  const scenarioOptions = Object.values(scenarios);
+
+  return (
+    <form action={'/' + locale + '/results'} method='get' className='search-form'>
+      <div className='search-form__grid'>
+        <label className='field'>
+          <span className='field__label'>{labels.from}</span>
+          <input className='field__control' name='origin' placeholder='SOF' required />
+        </label>
+
+        <label className='field'>
+          <span className='field__label'>{labels.to}</span>
+          <input className='field__control' name='destination' placeholder='MAD' required />
+        </label>
+
+        <label className='field'>
+          <span className='field__label'>{labels.depart}</span>
+          <input className='field__control' name='departureDate' type='date' required />
+        </label>
+
+        <label className='field'>
+          <span className='field__label'>{labels.return}</span>
+          <input className='field__control' name='returnDate' type='date' />
+        </label>
+
+        <label className='field'>
+          <span className='field__label'>Passengers</span>
+          <select className='field__select' name='adults' defaultValue='1'>
+            <option value='1'>1 traveler</option>
+            <option value='2'>2 travelers</option>
+            <option value='3'>3 travelers</option>
+            <option value='4'>4 travelers</option>
+            <option value='5'>5 travelers</option>
+            <option value='6'>6 travelers</option>
+          </select>
+        </label>
+      </div>
+
+      <div className='search-form__footer'>
+        <div className='search-form__scenarios'>
+          <span className='field__label'>Scenario</span>
+          <div className='scenario-row'>
+            {scenarioOptions.map((item) => (
+              <label key={item.type} className='scenario-chip'>
+                <input defaultChecked={item.type === 'standard'} type='radio' name='scenario' value={item.type} />
+                <span>{item.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <button className='search-cta' type='submit'>
+          {labels.cta}
+        </button>
+      </div>
+    </form>
+  );
+}

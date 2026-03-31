@@ -1,4 +1,80 @@
 import { getDictionary } from '@flyntos/i18n';
 import { getLocale } from '../../lib/get-locale';
 import { SearchForm } from '../../components/search/search-form';
-export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) { const locale=getLocale((await params).locale); const dict=getDictionary(locale); return <section style={{padding:'72px 0 56px'}}><div style={{width:'min(1180px,calc(100% - 32px))',margin:'0 auto',display:'grid',gridTemplateColumns:'minmax(0,1.1fr) minmax(320px,.9fr)',gap:24,alignItems:'end'}}><div><div style={{display:'inline-flex',padding:'8px 12px',borderRadius:999,border:'1px solid rgba(87,215,200,.18)',background:'rgba(87,215,200,.08)',color:'#d9fcf8',fontSize:12,letterSpacing:'.22em',textTransform:'uppercase'}}>{dict.ui.hero.eyebrow}</div><h1 style={{margin:'16px 0 14px',maxWidth:'11ch',fontSize:'clamp(3rem,7vw,5.4rem)',lineHeight:.94,letterSpacing:'-.05em'}}>{dict.ui.hero.title}</h1><p style={{maxWidth:620,lineHeight:1.72,color:'#94a3b8',fontSize:'1.02rem'}}>{dict.ui.hero.subtitle}</p><div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:14,marginTop:20}}><div style={{padding:16,borderRadius:20,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.03)'}}><div style={{fontSize:12,color:'#94a3b8',textTransform:'uppercase'}}>Search</div><div>Scenario-aware results</div></div><div style={{padding:16,borderRadius:20,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.03)'}}><div style={{fontSize:12,color:'#94a3b8',textTransform:'uppercase'}}>Locales</div><div>RTL-safe routing</div></div><div style={{padding:16,borderRadius:20,border:'1px solid rgba(255,255,255,.08)',background:'rgba(255,255,255,.03)'}}><div style={{fontSize:12,color:'#94a3b8',textTransform:'uppercase'}}>Providers</div><div>Mock Kiwi + Amadeus</div></div></div></div><div style={{border:'1px solid rgba(255,255,255,.12)',background:'rgba(255,255,255,.06)',backdropFilter:'blur(18px)',boxShadow:'0 24px 80px rgba(2,6,23,.5)',borderRadius:28,padding:24}}><SearchForm locale={locale} labels={dict.ui.hero} /></div></div></section>; }
+
+const proofItems = [
+  { label: 'Search', value: 'Scenario-aware ranking that keeps the best route visible fast.' },
+  { label: 'Locales', value: 'Multi-locale routing designed to scale without breaking the experience.' },
+  { label: 'Providers', value: 'A cleaner orchestration layer for aggregator logic, supply, and future expansion.' }
+];
+
+const previewItems = [
+  'Premium route search with calmer visual hierarchy and faster first actions.',
+  'Scenario presets that support cheapest, family, business, and direct-priority discovery.',
+  'A product shell built for result filters, SEO landing surfaces, and provider growth.'
+];
+
+export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = getLocale((await params).locale);
+  const dict = getDictionary(locale);
+
+  return (
+    <section className='home-hero'>
+      <div className='site-shell'>
+        <div className='home-hero__grid'>
+          <div className='home-hero__copy'>
+            <div className='hero-kicker'>{dict.ui.hero.eyebrow}</div>
+            <h1 className='hero-title'>{dict.ui.hero.title}</h1>
+            <p className='hero-subtitle'>
+              Flyntos turns flight search into a refined product surface: faster route discovery, clearer scenarios,
+              and a premium multi-locale foundation that feels ready for real scale.
+            </p>
+
+            <div className='hero-proof'>
+              {proofItems.map((item) => (
+                <div key={item.label} className='hero-proof__item'>
+                  <div className='hero-proof__label'>{item.label}</div>
+                  <div className='hero-proof__value'>{item.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <aside className='glass-panel preview-panel'>
+            <div className='preview-panel__eyebrow'>Preview</div>
+            <h2 className='preview-panel__title'>What this landing surface is setting up</h2>
+            <p className='preview-panel__body'>
+              A quieter premium shell for search now, with enough structure to support richer filters, provider depth,
+              and market-specific entry points next.
+            </p>
+            <ul className='preview-panel__list'>
+              {previewItems.map((item) => (
+                <li key={item} className='preview-panel__item'>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+            <div className='preview-panel__meta'>
+              <span className='preview-panel__pill'>Fast input rhythm</span>
+              <span className='preview-panel__pill'>Layered glass surface</span>
+              <span className='preview-panel__pill'>Built for scale</span>
+            </div>
+          </aside>
+        </div>
+
+        <div className='glass-panel search-shell'>
+          <div className='search-shell__header'>
+            <div>
+              <div className='search-shell__eyebrow'>Search workspace</div>
+              <h2 className='search-shell__title'>Search with confidence, not form fatigue.</h2>
+            </div>
+            <p className='search-shell__body'>
+              Route, timing, and traveler count are aligned into one production-grade surface so the primary action stays obvious.
+            </p>
+          </div>
+          <SearchForm locale={locale} labels={dict.ui.hero} />
+        </div>
+      </div>
+    </section>
+  );
+}

@@ -26,6 +26,7 @@ Current real behavior:
 - results page sends a POST request to the API
 - API validates the request, normalizes it into a canonical search contract, calls mock providers, filters and ranks results, and returns mock itineraries
 - worker only registers queue names and logs TODO text
+- landing page was redesigned into a premium dark travel-tech surface with a stronger hero, glass search shell, refined header, and atmospheric radial-glow background
 
 Current missing pieces:
 - no real provider integrations
@@ -154,7 +155,7 @@ Most important files:
 
 [LAYER] UI / presentation
 Main files: `apps/web/src/app/*`, `apps/web/src/components/*`
-Notes: Mostly server-rendered, inline-style-heavy, locale-aware.
+Notes: Mostly server-rendered, locale-aware. Landing page moved from inline MVP styling to a reusable CSS class system in `apps/web/src/app/globals.css`; results pages still use older inline panel styling.
 
 [LAYER] routing
 Main files: `apps/web/src/app/page.tsx`, `apps/web/src/app/[locale]/*`
@@ -222,6 +223,9 @@ Problem: Too many responsibilities in one file.
 [RISK AREA] `apps/web/src/app/[locale]/results/page.tsx`
 Problem: Controller logic and rendering logic are mixed.
 
+[RISK AREA] `apps/web/src/app/globals.css`
+Problem: New landing-page visual system is centralized here; changes have wide visual impact across header/footer/home layout.
+
 [RISK AREA] `packages/config/src/index.ts`
 Problem: Shared locale/scenario/queue config affects multiple services.
 
@@ -287,9 +291,13 @@ Verified directly:
 - `tsc.cmd -p packages/seo-engine/tsconfig.json --noEmit`
 - `tsc.cmd -p packages/shared/tsconfig.json --noEmit`
 - `tsc.cmd -p packages/ui/tsconfig.json --noEmit`
+- `npm.cmd run build`
+- `corepack pnpm --filter @flyntos/web build`
+- `curl.exe -I http://127.0.0.1:3000/en` after launching the web server in a separate PowerShell window
 
 Environment limitation:
-- root `pnpm -r build` and `pnpm -r typecheck` hit local `spawn EPERM` in this environment
+- long-lived background processes started through the tool session can terminate after startup, which causes the browser to show `ERR_CONNECTION_REFUSED`
+- the reliable workaround in this Windows environment is to run the web server in a separate persistent PowerShell window
 
 Testing status:
 - no first-party tests found
@@ -302,6 +310,7 @@ Safe to edit:
 - `README.md`
 - copy in `packages/i18n/src/index.ts`
 - simple presentational web components
+- `apps/web/src/app/globals.css` if the goal is homepage/header/footer styling and the shared landing-page visual system
 
 Edit with caution:
 - `apps/web/src/components/search/*`
@@ -309,6 +318,10 @@ Edit with caution:
 - `apps/web/src/lib/get-locale.ts`
 - `apps/web/next.config.mjs`
 - `docker-compose.yml`
+- `apps/web/src/app/[locale]/page.tsx`
+- `apps/web/src/components/layout/header.tsx`
+- `apps/web/src/components/layout/locale-switcher.tsx`
+- `apps/web/src/components/layout/footer.tsx`
 
 Only edit with full understanding:
 - `tsconfig.base.json`
@@ -345,7 +358,22 @@ First commands:
 - `corepack pnpm --filter @flyntos/worker dev`
 - `docker compose up --build`
 
+Practical web startup note for this environment:
+- if normal `pnpm dev` / `pnpm --filter @flyntos/web dev` does not stay alive, open a separate PowerShell window and run:
+- `cd C:\dev\Flyntos\apps\web`
+- `node .\node_modules\next\dist\bin\next dev -p 3000`
+- for production-style local preview:
+- `cd C:\dev\Flyntos`
+- `corepack pnpm --filter @flyntos/web build`
+- `cd C:\dev\Flyntos\apps\web`
+- `node .\node_modules\next\dist\bin\next start -p 3000`
+
 Where to start for UI issues:
+- `apps/web/src/app/globals.css`
+- `apps/web/src/app/[locale]/page.tsx`
+- `apps/web/src/components/layout/header.tsx`
+- `apps/web/src/components/layout/locale-switcher.tsx`
+- `apps/web/src/components/layout/footer.tsx`
 - `apps/web/src/app/[locale]/results/page.tsx`
 - `apps/web/src/components/search/*`
 
@@ -369,4 +397,4 @@ Where to start for deployment:
 10. PROJECT SUMMARY
 ==================================================
 
-Flyntos is a well-structured but still early monorepo foundation for a locale-aware flight search product. The most mature path is the search demo flow from web form to API validation to mock-provider orchestration to ranked results rendering. The codebase has solid shared contracts and config boundaries, but many important systems are still placeholders: real providers, DB access, auth, background processing, testing, and CI. Use this file as the baseline project map, and update it incrementally when architecture changes.
+Flyntos is a well-structured but still early monorepo foundation for a locale-aware flight search product. The most mature path is the search demo flow from web form to API validation to mock-provider orchestration to ranked results rendering. The homepage now has a materially more premium visual direction: atmospheric radial-glow background, restrained glass surfaces, stronger hero hierarchy, refined locale/header chrome, and a cleaner search shell with a passengers field in the UI. The codebase has solid shared contracts and config boundaries, but many important systems are still placeholders: real providers, DB access, auth, background processing, testing, and CI. One current practical constraint is local process stability in this environment; use the separate PowerShell window workflow for reliable browser preview. Use this file as the baseline project map, and update it incrementally when architecture changes.
