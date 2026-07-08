@@ -26,7 +26,7 @@ Current real behavior:
 - results page sends a POST request to the API
 - API validates the request, normalizes it into a canonical search contract, calls mock providers, filters and ranks results, and returns mock itineraries
 - worker only registers queue names and logs TODO text
-- landing page was redesigned into a premium dark travel-tech surface with a stronger hero, glass search shell, refined header, and atmospheric radial-glow background
+- landing page was redesigned into a premium dark travel-tech surface with a stronger hero, glass search shell, refined header, atmospheric radial-glow background, and a premium single-control locale switcher in the header
 
 Current missing pieces:
 - no real provider integrations
@@ -92,7 +92,9 @@ Most important files:
       src
         app
           globals.css
+          header-overrides.css
           layout.tsx
+          locale-switcher-overrides.css
           page.tsx
           [locale]
             layout.tsx
@@ -398,3 +400,27 @@ Where to start for deployment:
 ==================================================
 
 Flyntos is a well-structured but still early monorepo foundation for a locale-aware flight search product. The most mature path is the search demo flow from web form to API validation to mock-provider orchestration to ranked results rendering. The homepage now has a materially more premium visual direction: atmospheric radial-glow background, restrained glass surfaces, stronger hero hierarchy, refined locale/header chrome, and a cleaner search shell with a passengers field in the UI. The codebase has solid shared contracts and config boundaries, but many important systems are still placeholders: real providers, DB access, auth, background processing, testing, and CI. One current practical constraint is local process stability in this environment; use the separate PowerShell window workflow for reliable browser preview. Use this file as the baseline project map, and update it incrementally when architecture changes.
+
+==================================================
+11. SESSION UPDATE 2026-03-31
+==================================================
+
+Header / navigation changes completed:
+- refined `apps/web/src/components/layout/header.tsx` instead of rebuilding it
+- removed dev-facing header labeling
+- brand wordmark now renders as `Flyntos`
+- primary nav uses premium pill-style hover and active states
+- locale pills were replaced by a single premium switcher component in `apps/web/src/components/layout/locale-switcher.tsx`
+- new header-specific style layers now exist in `apps/web/src/app/header-overrides.css`
+- locale switcher-specific overrides now exist in `apps/web/src/app/locale-switcher-overrides.css`
+- `apps/web/src/app/layout.tsx` now imports the header override stylesheets
+
+Visual-system note:
+- homepage/header styling is no longer only in `apps/web/src/app/globals.css`
+- inspect globals.css, header-overrides.css, and locale-switcher-overrides.css together when changing header visuals
+
+Runtime / local-preview incident observed:
+- a stale runtime failure occurred with missing Next chunks from apps/web/.next/server/webpack-runtime.js
+- symptom: port 3000 kept serving broken output even after a successful rebuild because an old process was still alive
+- reliable fix: stop the old process bound to 3000, delete apps/web/.next, run npm.cmd run build, then relaunch the web server
+- verified recovery: http://127.0.0.1:3000/en returned HTTP 200 after rebuild and clean restart
