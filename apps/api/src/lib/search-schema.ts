@@ -5,6 +5,7 @@ export const filterSchema = z.object({ priceMin: z.coerce.number().min(0).option
 export const envSchema = z.object({
   API_PORT: z.coerce.number().default(4000),
   APP_BASE_URL: z.string().url().default('http://localhost:3000'),
-  ALLOWED_REDIRECT_ORIGINS: z.string().default('http://localhost:3000,https://example.com,https://aviasales.ru,https://travel.yandex.ru')
+  ALLOWED_REDIRECT_ORIGINS: z.string().default('http://localhost:3000,https://example.com,https://aviasales.ru,https://travel.yandex.ru'),
+  TP_API_TOKEN: z.string().default('8816890846e8cd4c158fb2e4ac78d018')
 });
 export const searchInputSchema = z.object({ origin: z.string().min(2), destination: z.string().min(2), departureDate: z.string(), returnDate: z.string().optional(), passengers: passengerSchema.optional(), cabin: z.enum(['economy','premium-economy','business','first']).optional(), locale: z.string().default(defaultLocale), scenario: z.enum(['standard','cheapest','best','weekend','family','business','direct-priority']).default('standard'), filters: filterSchema.optional() });

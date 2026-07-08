@@ -119,13 +119,37 @@ export function SearchForm({ locale, labels }: { locale: string; labels: any }) 
   const router = useRouter();
   const { step, setStep, steps } = useWizard();
 
-  const [fromCity, setFromCity] = useState('SOF');
-  const [toCity, setToCity] = useState('MAD');
+  const [fromCity, setFromCity] = useState('');
+  const [toCity, setToCity] = useState('');
   const [departDate, setDepartDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
   const [adults, setAdults] = useState('1');
   const [selectedScenario, setSelectedScenario] = useState('standard');
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    async function detectLocation() {
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        if (res.ok) {
+          const data = await res.json();
+          const cityEn = data.city;
+          if (cityEn) {
+            const airport = AIRPORTS.find(a => 
+              a.city_en?.toLowerCase() === cityEn.toLowerCase() || 
+              a.city_ru?.toLowerCase() === cityEn.toLowerCase()
+            );
+            if (airport) {
+              setFromCity(airport.code);
+            }
+          }
+        }
+      } catch (err) {
+        // ignore and leave empty
+      }
+    }
+    detectLocation();
+  }, []);
 
   const handleReverse = useCallback(() => {
     const temp = fromCity;
@@ -216,7 +240,7 @@ export function SearchForm({ locale, labels }: { locale: string; labels: any }) 
               
               <CityAutocomplete 
                 label={labels?.from || 'From'}
-                placeholder="SOF"
+                placeholder=""
                 value={fromCity}
                 onChange={setFromCity}
               />
@@ -237,7 +261,7 @@ export function SearchForm({ locale, labels }: { locale: string; labels: any }) 
 
               <CityAutocomplete 
                 label={labels?.to || 'To'}
-                placeholder="MAD"
+                placeholder=""
                 value={toCity}
                 onChange={setToCity}
               />

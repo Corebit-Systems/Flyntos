@@ -39,7 +39,41 @@ export async function redirectRoutes(app: FastifyInstance) {
       return reply.code(500).send({ error: 'Internal configuration validation error' });
     }
 
-    // 2. Safely parse query parameter
+    // Override with hardcoded bulletproof Aviasales redirect logic
+    if (partnerId === 'aviasales') {
+      const query = request.query as any;
+
+      // 1. Извлекаем параметры с защитой от любых имён ключей
+      const fromCity = (query.from || query.origin || 'SOF').toUpperCase();
+      const toCity = (query.to || query.destination || 'MAD').toUpperCase();
+      const rawDate = query.date || query.depart || '2026-07-10';
+
+      // 2. Парсим дату строго в формат DDMM (например, '1007')
+      let formattedDate = '1007';
+      if (rawDate && rawDate.includes('-')) {
+        const [year, month, day] = rawDate.split('-');
+        formattedDate = `${day}${month}`;
+      }
+
+      // 3. Собираем монолитный путь для Aviasales/Jetradar
+      // Шаблон: /search/SOF1007MAD1
+      const searchPath = `/search/${fromCity}${formattedDate}${toCity}1`;
+
+      // 4. Финальный реферальный URL
+      const targetUrl = `https://tp.media/r?marker=748197&trs=547770&p=4114&campaign_id=100&u=${encodeURIComponent('https://www.aviasales.com' + searchPath)}`;
+
+      // 5. Логирование в консоль бэкенда для проверки
+      console.log("====================================");
+      console.log("FLYNTOS DEBUG:");
+      console.log("FROM:", fromCity, "TO:", toCity, "DATE:", formattedDate);
+      console.log("SEARCH PATH:", searchPath);
+      console.log("TARGET URL:", targetUrl);
+      console.log("====================================");
+
+      return reply.code(302).redirect(targetUrl);
+    }
+
+    // 2. Safely parse query parameter for other partners
     const parsedQuery = querySchema.safeParse(request.query);
     if (!parsedQuery.success) {
       return reply.code(400).send({ error: 'Invalid query parameters' });
@@ -61,28 +95,16 @@ export async function redirectRoutes(app: FastifyInstance) {
       return reply.code(400).send({ error: 'Invalid destination URL' });
     }
 
-    // Add search parameters if they are present
-    if (parsedQuery.data.from) targetUrl.searchParams.set('origin', String(parsedQuery.data.from).toUpperCase());
-    if (parsedQuery.data.to && !toParam.startsWith('http')) targetUrl.searchParams.set('destination', toParam.toUpperCase());
+    // Extract parsed parameters
+    const originCode = parsedQuery.data.from ? String(parsedQuery.data.from).toUpperCase() : null;
+    const destCode = (parsedQuery.data.to && !toParam.startsWith('http')) ? toParam.toUpperCase() : null;
     const flightDate = parsedQuery.data.date || parsedQuery.data.depart;
+
+    // Add search parameters if they are present (fallback for other partners)
+    if (originCode) targetUrl.searchParams.set('origin', originCode);
+    if (destCode) targetUrl.searchParams.set('destination', destCode);
     if (flightDate) targetUrl.searchParams.set('depart_date', String(flightDate));
     if (parsedQuery.data.return) targetUrl.searchParams.set('return_date', String(parsedQuery.data.return));
-
-    // Special behavior for Aviasales search route
-    if (partnerId === 'aviasales' && parsedQuery.data.from && parsedQuery.data.to) {
-      const currentU = targetUrl.searchParams.get('u');
-      if (currentU) {
-        try {
-          const uUrl = new URL(currentU);
-          if (!uUrl.pathname.includes('/search')) {
-            uUrl.pathname = '/search';
-            targetUrl.searchParams.set('u', uUrl.toString());
-          }
-        } catch (e) {
-          // ignore parsing error on u
-        }
-      }
-    }
 
     // 4. Open Redirect Protection (White-list checking)
     const env = envSchema.parse(process.env);
