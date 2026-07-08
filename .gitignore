@@ -9,3 +9,6 @@ coverage
 .env.local
 pnpm-lock.yaml
 
+
+.vercel
+.env*
