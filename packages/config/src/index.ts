@@ -1,4 +1,4 @@
-﻿export type LocaleCode='en'|'es'|'pt'|'fr'|'de'|'zh-CN'|'ar'|'it'|'ru'|'uk'|'be'|'ja'|'ko';
+export type LocaleCode='en'|'es'|'pt'|'fr'|'de'|'zh-CN'|'ar'|'it'|'ru'|'uk'|'be'|'ja'|'ko';
 export const defaultLocale:LocaleCode='en';
 export const localeRegistry={en:{code:'en',label:'English',dir:'ltr',marketDefault:'US',currencyDefault:'USD',enabled:true,fontStrategy:'latin'},es:{code:'es',label:'Español',dir:'ltr',marketDefault:'ES',currencyDefault:'EUR',enabled:true,fontStrategy:'latin'},pt:{code:'pt',label:'Português',dir:'ltr',marketDefault:'PT',currencyDefault:'EUR',enabled:true,fontStrategy:'latin'},fr:{code:'fr',label:'Français',dir:'ltr',marketDefault:'FR',currencyDefault:'EUR',enabled:true,fontStrategy:'latin'},de:{code:'de',label:'Deutsch',dir:'ltr',marketDefault:'DE',currencyDefault:'EUR',enabled:true,fontStrategy:'latin'}} as const;
 export const localeRegistry2={'zh-CN':{code:'zh-CN',label:'简体中文',dir:'ltr',marketDefault:'CN',currencyDefault:'CNY',enabled:true,fontStrategy:'cjk'},ar:{code:'ar',label:'العربية',dir:'rtl',marketDefault:'AE',currencyDefault:'AED',enabled:true,fontStrategy:'arabic'},it:{code:'it',label:'Italiano',dir:'ltr',marketDefault:'IT',currencyDefault:'EUR',enabled:true,fontStrategy:'latin'},ru:{code:'ru',label:'Русский',dir:'ltr',marketDefault:'RU',currencyDefault:'EUR',enabled:true,fontStrategy:'cyrillic'},uk:{code:'uk',label:'Українська',dir:'ltr',marketDefault:'UA',currencyDefault:'EUR',enabled:true,fontStrategy:'cyrillic'},be:{code:'be',label:'Беларуская',dir:'ltr',marketDefault:'BY',currencyDefault:'EUR',enabled:true,fontStrategy:'cyrillic'},ja:{code:'ja',label:'日本語',dir:'ltr',marketDefault:'JP',currencyDefault:'JPY',enabled:true,fontStrategy:'cjk'},ko:{code:'ko',label:'한국어',dir:'ltr',marketDefault:'KR',currencyDefault:'KRW',enabled:true,fontStrategy:'cjk'}} as const;
@@ -12,3 +12,5 @@ export const scenarioConfigsLast={'direct-priority':{type:'direct-priority',labe
 export const queueNames=['search-refresh','price-alerts','clickout-events','provider-sync','seo-precompute','translations-sync','analytics-rollups','notifications'] as const;
 export const localeList=Object.values(locales);
 export const scenarios={...scenarioConfigs,...scenarioConfigsExtra,...scenarioConfigsLast};
+
+export * from './partners-list';
