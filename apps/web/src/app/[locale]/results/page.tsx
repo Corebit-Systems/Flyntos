@@ -41,7 +41,7 @@ export default async function ResultsPage({
           </p>
         </div>
         <a 
-          href="http://localhost:4000/out/aviasales" 
+          href={`http://localhost:4000/out/aviasales?from=${safeOrigin}&to=${safeDestination}&date=${safeDepartDate}`} 
           target="_blank" rel="noopener noreferrer"
           className="shrink-0 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition-all text-center uppercase tracking-wider cursor-pointer shadow-lg shadow-blue-500/20"
         >

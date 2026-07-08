@@ -51,6 +51,9 @@ export function PriceMatrix({ origin, destination, departDate }: { origin: strin
       params.set('departureDate', newDate);
     }
     router.push(`${pathname}?${params.toString()}`);
+
+    // Open out gateway
+    window.open(`http://localhost:4000/out/aviasales?from=${origin}&to=${destination}&date=${newDate}`, '_blank');
   };
 
   const formatter = new Intl.DateTimeFormat('ru-RU', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -68,10 +71,10 @@ export function PriceMatrix({ origin, destination, departDate }: { origin: strin
               key={day.dateString}
               onClick={() => handleSelect(day.dateString)}
               className={`
-                shrink-0 w-28 md:w-auto flex flex-col items-center justify-center p-3 rounded-xl cursor-pointer transition-all border 
+                shrink-0 w-28 md:w-auto flex flex-col items-center justify-center p-3 rounded-xl cursor-pointer transition-all border hover:border-blue-500/50 hover:bg-white/10 active:scale-[0.98] 
                 ${isSelected 
-                  ? 'border-blue-500/50 bg-blue-500/5 hover:bg-blue-500/10' 
-                  : 'bg-white/5 border-white/10 hover:bg-white/10'
+                  ? 'border-blue-500/50 bg-blue-500/5' 
+                  : 'bg-white/5 border-white/10'
                 }
               `}
             >
