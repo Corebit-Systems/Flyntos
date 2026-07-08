@@ -18,7 +18,7 @@ function generateFallbackMatrix(origin: string, destination: string, departDateS
   const routeSeed = (origin + destination).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
 
   // European routes avg ~$65-110, long-haul ~$300+
-  const europeanCodes = new Set(['ROM','FCO','CIA','MAD','BCN','PAR','CDG','ORY','LON','LHR','LGW','AMS','BER','VIE','PRG','ATH','IST','MIL','MXP','LIN','DUB','CPH','ARN','OSL','HEL','LIS','WAW','BUD','BRU','ZRH']);
+  const europeanCodes = new Set(['ROM', 'FCO', 'CIA', 'MAD', 'BCN', 'PAR', 'CDG', 'ORY', 'LON', 'LHR', 'LGW', 'AMS', 'BER', 'VIE', 'PRG', 'ATH', 'IST', 'MIL', 'MXP', 'LIN', 'DUB', 'CPH', 'ARN', 'OSL', 'HEL', 'LIS', 'WAW', 'BUD', 'BRU', 'ZRH']);
   const isEuroRoute = europeanCodes.has(origin.toUpperCase()) || europeanCodes.has(destination.toUpperCase());
   const basePrice = isEuroRoute
     ? 60 + (routeSeed % 60)   // $60–$120 for European routes
@@ -29,9 +29,10 @@ function generateFallbackMatrix(origin: string, destination: string, departDateS
   if (isNaN(pivot.getTime())) pivot.setTime(Date.now());
 
   const offsets = [-3, -2, -1, 0, 1, 2, 3];
-  const days = offsets.map((offset, i) => {
+  const days: PriceDay[] = offsets.map((offset, i) => {
     const d = new Date(pivot);
-    d.setDate(d.getDate() + offset);
+    // Строго UTC, чтобы избежать смещения даты из-за часового пояса сервера
+    d.setUTCDate(d.getUTCDate() + offset);
     const dateStr = d.toISOString().substring(0, 10);
 
     // Noise: deterministic per day index + route seed, range -$15...+$25
@@ -41,21 +42,32 @@ function generateFallbackMatrix(origin: string, destination: string, departDateS
     return { date: dateStr, price: rawPrice, isFallback: true };
   });
 
-  // Mark the cheapest day with a slightly lower price (ensures "Best" badge appears)
-  const minIdx = days.reduce((minI, d, i, arr) => (d.price! < arr[minI].price! ? i : minI), 0);
-  days[minIdx].price = Math.max(days[minIdx].price! - 8, 1);
+  // Безопасный поиск минимальной цены для строгого TypeScript (без индексов массива)
+  let minDay: PriceDay | undefined;
+  for (const day of days) {
+    if (!minDay || (day.price !== null && minDay.price !== null && day.price < minDay.price)) {
+      minDay = day;
+    }
+  }
+
+  // Снижаем цену у найденного дня для бейджа "Best"
+  if (minDay && minDay.price !== null) {
+    minDay.price = Math.max(minDay.price - 8, 1);
+  }
 
   return days;
 }
+
+const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
 export async function pricesRoutes(app: FastifyInstance) {
 
   // Legacy route kept for backward compat
   app.get('/prices/matrix', async (request, reply) => {
     const querySchema = z.object({
-      origin: z.string().min(3).max(3),
-      destination: z.string().min(3).max(3),
-      departDate: z.string().optional()
+      origin: z.string().length(3),
+      destination: z.string().length(3),
+      departDate: z.string().regex(dateRegex, 'Date must be YYYY-MM-DD').optional()
     });
 
     const parsed = querySchema.safeParse(request.query);
@@ -75,7 +87,12 @@ export async function pricesRoutes(app: FastifyInstance) {
         app.log.error(`Travelpayouts API error: ${response.status}`);
         return reply.code(502).send({ error: 'Failed to fetch prices from provider' });
       }
-      return reply.send(await response.json());
+
+      // Защита от кривого JSON при коде 200
+      const data = await response.json().catch(() => null);
+      if (!data) throw new Error('Invalid JSON payload from TP');
+
+      return reply.send(data);
     } catch (error) {
       app.log.error(error);
       return reply.code(500).send({ error: 'Internal server error while fetching prices' });
@@ -85,9 +102,9 @@ export async function pricesRoutes(app: FastifyInstance) {
   // /api/prices — used by PriceMatrix component, with Smart Fallback
   app.get('/api/prices', async (request, reply) => {
     const querySchema = z.object({
-      origin: z.string().min(3).max(3),
-      destination: z.string().min(3).max(3),
-      depart_date: z.string().optional()
+      origin: z.string().length(3),
+      destination: z.string().length(3),
+      depart_date: z.string().regex(dateRegex, 'Date must be YYYY-MM-DD').optional()
     });
 
     const parsed = querySchema.safeParse(request.query);
@@ -109,7 +126,7 @@ export async function pricesRoutes(app: FastifyInstance) {
       });
 
       if (response.ok) {
-        const raw = await response.json() as { data?: Array<{ depart_date: string; value: number }> };
+        const raw = (await response.json().catch(() => ({}))) as { data?: Array<{ depart_date: string; value: number }> };
         apiDays = (raw.data || []).map(d => ({
           date: d.depart_date,
           price: typeof d.value === 'number' ? d.value : null
@@ -135,4 +152,3 @@ export async function pricesRoutes(app: FastifyInstance) {
     return reply.send({ data: fallbackDays, source: 'fallback' });
   });
 }
-
