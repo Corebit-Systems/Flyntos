@@ -4,13 +4,13 @@
   "private": true,
   "packageManager": "pnpm@10.6.3",
   "scripts": {
-    "dev": "corepack pnpm -r --parallel --filter @flyntos/web --filter @flyntos/api --filter @flyntos/worker dev",
-    "dev:web": "corepack pnpm --filter @flyntos/web dev",
-    "dev:api": "corepack pnpm --filter @flyntos/api dev",
-    "dev:worker": "corepack pnpm --filter @flyntos/worker dev",
-    "build": "corepack pnpm -r build",
-    "lint": "corepack pnpm -r lint",
-    "typecheck": "corepack pnpm -r typecheck",
+    "dev": "pnpm -r --parallel --filter @flyntos/web --filter @flyntos/api --filter @flyntos/worker dev",
+    "dev:web": "pnpm --filter @flyntos/web dev",
+    "dev:api": "pnpm --filter @flyntos/api dev",
+    "dev:worker": "pnpm --filter @flyntos/worker dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
     "format": "prettier --write ."
   },
   "devDependencies": {
@@ -27,4 +27,3 @@
     "typescript": "^5.8.2"
   }
 }
-
