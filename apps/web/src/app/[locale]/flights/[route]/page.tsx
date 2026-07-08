@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { getLocale } from '../../../../lib/get-locale';
 import { SearchForm } from '../../../../components/search/search-form';
 
@@ -22,7 +23,7 @@ export async function generateStaticParams() {
   return params;
 }
 
-export default async function AeoFlightPage({
+async function FlightsPageContent({
   params
 }: {
   params: Promise<{ locale: string; route: string }>
@@ -124,5 +125,17 @@ export default async function AeoFlightPage({
       </div>
 
     </div>
+  );
+}
+
+export default function Page({
+  params
+}: {
+  params: Promise<{ locale: string; route: string }>
+}) {
+  return (
+    <Suspense fallback={<div>Загрузка рейсов...</div>}>
+      <FlightsPageContent params={params} />
+    </Suspense>
   );
 }
