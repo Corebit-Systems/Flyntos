@@ -5,8 +5,12 @@ import { partnerConfigSchema } from '@flyntos/search-contracts';
 import { TRAVEL_PARTNERS } from '@flyntos/config';
 
 const querySchema = z.object({
-  to: z.string().url().optional(),
-}).strict();
+  to: z.string().optional(),
+  from: z.string().optional(),
+  date: z.string().optional(),
+  depart: z.string().optional(),
+  return: z.string().optional(),
+}).catchall(z.unknown());
 
 export async function redirectRoutes(app: FastifyInstance) {
   app.get('/out/:partnerId', async (request, reply) => {
@@ -35,14 +39,19 @@ export async function redirectRoutes(app: FastifyInstance) {
       return reply.code(500).send({ error: 'Internal configuration validation error' });
     }
 
-    // 2. Safely parse query parameter 'to'
+    // 2. Safely parse query parameter
     const parsedQuery = querySchema.safeParse(request.query);
     if (!parsedQuery.success) {
       return reply.code(400).send({ error: 'Invalid query parameters' });
     }
 
-    // If 'to' is specified, we use it; otherwise, use partner's base URL.
-    let targetUrlString = parsedQuery.data.to || partner.baseUrl;
+    // If 'to' is specified and is a valid HTTP URL, use it as redirect destination.
+    // Otherwise use partner.baseUrl.
+    let targetUrlString = partner.baseUrl;
+    const toParam = String(parsedQuery.data.to || '');
+    if (toParam.startsWith('http://') || toParam.startsWith('https://')) {
+      targetUrlString = toParam;
+    }
 
     // 3. Build URL strictly via new URL() to avoid injection
     let targetUrl: URL;
@@ -50,6 +59,29 @@ export async function redirectRoutes(app: FastifyInstance) {
       targetUrl = new URL(targetUrlString);
     } catch {
       return reply.code(400).send({ error: 'Invalid destination URL' });
+    }
+
+    // Add search parameters if they are present
+    if (parsedQuery.data.from) targetUrl.searchParams.set('origin', String(parsedQuery.data.from).toUpperCase());
+    if (parsedQuery.data.to && !toParam.startsWith('http')) targetUrl.searchParams.set('destination', toParam.toUpperCase());
+    const flightDate = parsedQuery.data.date || parsedQuery.data.depart;
+    if (flightDate) targetUrl.searchParams.set('depart_date', String(flightDate));
+    if (parsedQuery.data.return) targetUrl.searchParams.set('return_date', String(parsedQuery.data.return));
+
+    // Special behavior for Aviasales search route
+    if (partnerId === 'aviasales' && parsedQuery.data.from && parsedQuery.data.to) {
+      const currentU = targetUrl.searchParams.get('u');
+      if (currentU) {
+        try {
+          const uUrl = new URL(currentU);
+          if (!uUrl.pathname.includes('/search')) {
+            uUrl.pathname = '/search';
+            targetUrl.searchParams.set('u', uUrl.toString());
+          }
+        } catch (e) {
+          // ignore parsing error on u
+        }
+      }
     }
 
     // 4. Open Redirect Protection (White-list checking)
