@@ -2,6 +2,8 @@ import { Suspense } from 'react';
 import { getLocale } from '../../../../lib/get-locale';
 import { SearchForm } from '../../../../components/search/search-form';
 
+export const dynamic = 'force-dynamic';
+
 export async function generateStaticParams() {
   const topRoutes = [
     'sof-mad',
