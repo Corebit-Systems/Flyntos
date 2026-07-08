@@ -1,29 +1,10 @@
 import { getDictionary } from '@flyntos/i18n';
-import { searchFlights } from '../../../lib/api';
 import { getLocale } from '../../../lib/get-locale';
-import { parseSearchFilters, hasSearchFilters } from '../../../lib/search-state';
-import { ResultCard } from '../../../components/search/result-card';
-import { FilterSidebar } from '../../../components/search/filter-sidebar';
-import { ScenarioSwitcher } from '../../../components/search/scenario-switcher';
-import { ResultsTabs } from '../../../components/search/ResultsTabs';
 
-const isValidDate = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value);
-const shell = { width: 'min(1180px,calc(100% - 32px))', margin: '0 auto' };
-const activeFilterSummary = (query: Record<string, string | undefined>) => [
-  ['priceMax', query.priceMax ? ('Up to ' + query.priceMax + ' USD') : undefined],
-  ['priceMin', query.priceMin ? ('From ' + query.priceMin + ' USD') : undefined],
-  ['maxStops', query.maxStops === '0' ? 'Direct only' : query.maxStops === '1' ? 'Up to 1 stop' : undefined],
-  ['cabin', query.cabin],
-  ['baggage', query.baggage === 'checked' ? 'Checked bag' : query.baggage === 'carry-on' ? 'Carry-on' : undefined]
-].map(([, label]) => label).filter(Boolean).join(' • ');
-
-const panel = {
-  border: '1px solid rgba(255,255,255,.12)',
-  background: 'rgba(255,255,255,.06)',
-  backdropFilter: 'blur(18px)',
-  boxShadow: '0 24px 80px rgba(2,6,23,.5)',
-  borderRadius: 28,
-  padding: 28
+// Simple XSS sanitization (Next.js automatically escapes in JSX, but this is a requested explicit sanitization)
+const sanitize = (str: string | undefined | null) => {
+  if (!str) return '';
+  return String(str).replace(/</g, "&lt;").replace(/>/g, "&gt;");
 };
 
 export default async function ResultsPage({
@@ -34,131 +15,100 @@ export default async function ResultsPage({
   searchParams: Promise<Record<string, string | undefined>>
 }) {
   const locale = getLocale((await params).locale);
-  const dict = getDictionary(locale);
   const currentSearch = await searchParams;
-  const origin = currentSearch.origin?.trim() || '';
-  const destination = currentSearch.destination?.trim() || '';
-  const departureDate = currentSearch.departureDate;
-  const scenario = currentSearch.scenario || 'standard';
-  const filters = parseSearchFilters(currentSearch);
-  const filterSummary = activeFilterSummary(currentSearch);
+  
+  // Try to match 'origin' from the form we just wrote or 'from' as requested by user
+  const originRaw = currentSearch.origin?.trim() || currentSearch.from?.trim() || 'SOF';
+  const destinationRaw = currentSearch.destination?.trim() || currentSearch.to?.trim() || 'MAD';
 
-  if (!origin || !destination || !departureDate) {
-    return (
-      <section style={{ padding: '36px 0 64px' }}>
-        <div style={{ ...shell, ...panel }}>
-          <h1 className="text-2xl font-bold mb-2">Start a search</h1>
-          <p style={{ color: '#94a3b8' }}>{dict.ui.results.empty}</p>
-        </div>
-      </section>
-    );
-  }
+  const safeOrigin = sanitize(originRaw).toUpperCase();
+  const safeDestination = sanitize(destinationRaw).toUpperCase();
 
-  if (!isValidDate(departureDate)) {
-    return (
-      <section style={{ padding: '36px 0 64px' }}>
-        <div style={{ ...shell, ...panel }}>
-          <h1 className="text-2xl font-bold mb-2">Invalid date</h1>
-          <p style={{ color: '#fca5a5' }}>Use YYYY-MM-DD for departure.</p>
-        </div>
-      </section>
-    );
-  }
-
-  try {
-    const payload = {
-      origin,
-      destination,
-      departureDate,
-      returnDate: currentSearch.returnDate,
-      locale,
-      scenario,
-      ...(hasSearchFilters(filters) ? { filters } : {})
-    };
-    const data = await searchFlights(payload);
-
-    const sidebarComponent = (
-      <FilterSidebar locale={locale} query={currentSearch} filters={filters} />
-    );
-
-    if (!data.itineraries?.length) {
-      const emptyFlights = (
-        <div style={panel}>
-          <h1 className="text-2xl font-bold mb-2">{dict.ui.results.title}</h1>
-          <p style={{ color: '#94a3b8' }}>No itineraries matched those constraints.</p>
-          {filterSummary ? <p style={{ color: '#64748b', marginBottom: 0 }}>Active filters: {filterSummary}</p> : null}
-        </div>
-      );
-
-      return (
-        <section style={{ padding: '36px 0 64px' }}>
-          <div style={shell}>
-            <ResultsTabs
-              flightsContent={emptyFlights}
-              sidebarContent={sidebarComponent}
-              origin={origin}
-              destination={destination}
-            />
-          </div>
-        </section>
-      );
-    }
-
-    const flightsList = (
-      <div>
-        <div style={{ display: 'grid', gap: 12, marginBottom: 20 }}>
-          <h1 style={{ margin: 0, fontSize: 32, letterSpacing: '-.04em', fontWeight: 700 }}>
-            {dict.ui.results.title}
-          </h1>
-          <p style={{ margin: 0, color: '#94a3b8', fontSize: '14px' }}>
-            {origin.toUpperCase()} to {destination.toUpperCase()} | {departureDate}
-          </p>
-          {filterSummary ? <p style={{ margin: 0, color: '#64748b', fontSize: '13px' }}>Active filters: {filterSummary}</p> : null}
-          <ScenarioSwitcher locale={locale} query={currentSearch} current={scenario} />
-        </div>
+  return (
+    <div className="min-h-screen pt-32 pb-16 px-4 relative flex flex-col items-center">
+      
+      {/* Informer - Aviasales */}
+      <div className="w-full max-w-5xl mb-12 p-6 bg-blue-900/20 border border-blue-500/20 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl backdrop-blur-md relative z-10">
         <div>
-          {data.itineraries.map((item: any) => (
-            <ResultCard key={item.id} itinerary={item} />
-          ))}
+          <h2 className="text-xl font-bold text-white mb-2">
+            Ваш поиск авиабилетов по маршруту <span className="text-blue-400">{safeOrigin}</span> → <span className="text-blue-400">{safeDestination}</span> открыт
+          </h2>
+          <p className="text-neutral-300 text-sm">
+            Изучите дополнительные услуги для вашей поездки ниже
+          </p>
         </div>
+        <a 
+          href="http://localhost:4000/out/aviasales" 
+          target="_blank" rel="noopener noreferrer"
+          className="shrink-0 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition-all text-center uppercase tracking-wider cursor-pointer shadow-lg shadow-blue-500/20"
+        >
+          Перейти к билетам вручную
+        </a>
       </div>
-    );
 
-    return (
-      <section style={{ padding: '36px 0 64px' }}>
-        <div style={shell}>
-          <ResultsTabs
-            flightsContent={flightsList}
-            sidebarContent={sidebarComponent}
-            origin={origin}
-            destination={destination}
-          />
+      <div className="w-full max-w-5xl flex flex-col gap-12 relative z-10">
+        
+        {/* Block 1: Cars & Yachts */}
+        <div>
+          <h3 className="text-2xl font-extrabold text-white mb-6">Шаг 3: Аренда авто и премиум-яхт</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* AutoEurope */}
+            <div className="bg-neutral-900/60 border border-white/5 rounded-2xl p-5 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl backdrop-blur-md min-h-[220px]">
+              <div>
+                <h4 className="text-xl font-bold text-white mb-2">AutoEurope</h4>
+                <p className="text-sm text-neutral-400 leading-relaxed">Надежный прокат автомобилей по всему миру с гарантией лучшей цены.</p>
+              </div>
+              <a href="http://localhost:4000/out/autoeurope" target="_blank" rel="noopener noreferrer" className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition-all text-center uppercase tracking-wider mt-4 cursor-pointer block">
+                Забронировать авто
+              </a>
+            </div>
+
+            {/* SEARADAR */}
+            <div className="bg-neutral-900/60 border border-white/5 rounded-2xl p-5 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl backdrop-blur-md min-h-[220px]">
+              <div>
+                <h4 className="text-xl font-bold text-white mb-2">SEARADAR</h4>
+                <p className="text-sm text-neutral-400 leading-relaxed">Аренда премиум-яхт с капитаном и без для незабываемого отдыха.</p>
+              </div>
+              <a href="http://localhost:4000/out/searadar" target="_blank" rel="noopener noreferrer" className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition-all text-center uppercase tracking-wider mt-4 cursor-pointer block">
+                Арендовать яхту
+              </a>
+            </div>
+
+          </div>
         </div>
-      </section>
-    );
-  } catch (error) {
-    const errorFlights = (
-      <div style={panel}>
-        <h1 className="text-2xl font-bold mb-2">{dict.ui.results.title}</h1>
-        <p style={{ color: '#fca5a5' }}>
-          Search failed: {error instanceof Error ? error.message : 'Unknown error'}
-        </p>
+
+        {/* Block 2: Transfers & Services */}
+        <div>
+          <h3 className="text-2xl font-extrabold text-white mb-6">Шаг 4: Трансферы и Travel-сервисы</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* KiwiTaxi */}
+            <div className="bg-neutral-900/60 border border-white/5 rounded-2xl p-5 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl backdrop-blur-md min-h-[220px]">
+              <div>
+                <h4 className="text-xl font-bold text-white mb-2">KiwiTaxi</h4>
+                <p className="text-sm text-neutral-400 leading-relaxed">Удобные и безопасные трансферы из аэропорта прямо до дверей вашего отеля.</p>
+              </div>
+              <a href="http://localhost:4000/out/kiwitaxi" target="_blank" rel="noopener noreferrer" className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition-all text-center uppercase tracking-wider mt-4 cursor-pointer block">
+                Заказать трансфер
+              </a>
+            </div>
+
+            {/* Saily */}
+            <div className="bg-neutral-900/60 border border-white/5 rounded-2xl p-5 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl backdrop-blur-md min-h-[220px]">
+              <div>
+                <h4 className="text-xl font-bold text-white mb-2">Saily</h4>
+                <p className="text-sm text-neutral-400 leading-relaxed">Глобальный eSIM-интернет для путешествий без лишних роуминговых платежей.</p>
+              </div>
+              <a href="http://localhost:4000/out/saily" target="_blank" rel="noopener noreferrer" className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition-all text-center uppercase tracking-wider mt-4 cursor-pointer block">
+                Подключить eSIM
+              </a>
+            </div>
+
+          </div>
+        </div>
+
       </div>
-    );
-
-    return (
-      <section style={{ padding: '36px 0 64px' }}>
-        <div style={shell}>
-          <ResultsTabs
-            flightsContent={errorFlights}
-            sidebarContent={
-              <FilterSidebar locale={locale} query={currentSearch} filters={filters} />
-            }
-            origin={origin}
-            destination={destination}
-          />
-        </div>
-      </section>
-    );
-  }
+    </div>
+  );
 }
