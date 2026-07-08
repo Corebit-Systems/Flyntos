@@ -1,4 +1,4 @@
-﻿import{z}from'zod';
+import{z}from'zod';
 export const searchScenarioSchema=z.enum(['standard','cheapest','best','weekend','family','business','direct-priority']);
 export type SearchScenarioType=z.infer<typeof searchScenarioSchema>;
 export const cabinSchema=z.enum(['economy','premium-economy','business','first']);
@@ -12,3 +12,6 @@ export type ProviderMetadata={provider:string;capabilities:string[];latencyMs:nu
 export type CanonicalItinerary={id:string;routeSignature:string;segments:CanonicalSegment[];offers:CanonicalOffer[];baggageSummary:string;totalDurationMinutes:number;stops:number;rankingScore:number;bestOffer:CanonicalOffer;providerMetadata:ProviderMetadata[]};
 export type SearchDiagnostics={searchId:string;providerCount:number;providerFailures:{provider:string;message:string}[];latencyMs:number;dedupeRatio:number;cacheStatus:'miss'|'partial-hit'|'hit';notes:string[]};
 export type SearchResponse={id:string;request:CanonicalSearchRequest;itineraries:CanonicalItinerary[];diagnostics:SearchDiagnostics;generatedAt:string};
+
+export * from './search';
+export * from './partners';
