@@ -10,7 +10,18 @@ interface WizardContainerProps {
   previewItems?: string[];
 }
 
+import { useEffect } from 'react';
+
 export function WizardContainer({ locale, dict, proofItems, previewItems }: WizardContainerProps) {
+  useEffect(() => {
+    // Silent warm-up ping for the backend
+    try {
+      fetch('http://localhost:4000/health').catch(() => {});
+    } catch (e) {
+      // Ignored intentionally
+    }
+  }, []);
+
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-start pt-24 pb-12 p-4">
       {/* Top Search Area */}
