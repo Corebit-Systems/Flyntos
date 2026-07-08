@@ -72,12 +72,12 @@ export default async function ResultsPage({
           <p className="text-neutral-400 text-sm max-w-md text-center mb-8">
             Для поиска авиабилетов и подбора транспорта необходимо выбрать пункт отправления и назначения.
           </p>
-          <a
+          <Link
             href="/"
             className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-blue-500/20 uppercase tracking-wider"
           >
             Вернуться к поиску
-          </a>
+          </Link>
         </div>
       ) : (
         <>
