@@ -1,6 +1,7 @@
 import { getDictionary } from '@flyntos/i18n';
 import { getLocale } from '../../../lib/get-locale';
 import { PriceMatrix } from '../../../components/results/PriceMatrix';
+import { ResultsTabs } from '../../../components/results/ResultsTabs';
 
 // Simple XSS sanitization (Next.js automatically escapes in JSX, but this is a requested explicit sanitization)
 const sanitize = (str: string | undefined | null) => {
@@ -51,69 +52,7 @@ export default async function ResultsPage({
 
       <PriceMatrix origin={safeOrigin} destination={safeDestination} departDate={safeDepartDate} />
 
-      <div className="w-full max-w-5xl flex flex-col gap-12 relative z-10">
-        
-        {/* Block 1: Cars & Yachts */}
-        <div>
-          <h3 className="text-2xl font-extrabold text-white mb-6">Шаг 3: Аренда авто и премиум-яхт</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            {/* AutoEurope */}
-            <div className="bg-neutral-900/60 border border-white/5 rounded-2xl p-5 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl backdrop-blur-md min-h-[220px]">
-              <div>
-                <h4 className="text-xl font-bold text-white mb-2">AutoEurope</h4>
-                <p className="text-sm text-neutral-400 leading-relaxed">Надежный прокат автомобилей по всему миру с гарантией лучшей цены.</p>
-              </div>
-              <a href="http://localhost:4000/out/autoeurope" target="_blank" rel="noopener noreferrer" className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition-all text-center uppercase tracking-wider mt-4 cursor-pointer block">
-                Забронировать авто
-              </a>
-            </div>
-
-            {/* SEARADAR */}
-            <div className="bg-neutral-900/60 border border-white/5 rounded-2xl p-5 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl backdrop-blur-md min-h-[220px]">
-              <div>
-                <h4 className="text-xl font-bold text-white mb-2">SEARADAR</h4>
-                <p className="text-sm text-neutral-400 leading-relaxed">Аренда премиум-яхт с капитаном и без для незабываемого отдыха.</p>
-              </div>
-              <a href="http://localhost:4000/out/searadar" target="_blank" rel="noopener noreferrer" className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition-all text-center uppercase tracking-wider mt-4 cursor-pointer block">
-                Арендовать яхту
-              </a>
-            </div>
-
-          </div>
-        </div>
-
-        {/* Block 2: Transfers & Services */}
-        <div>
-          <h3 className="text-2xl font-extrabold text-white mb-6">Шаг 4: Трансферы и Travel-сервисы</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            {/* KiwiTaxi */}
-            <div className="bg-neutral-900/60 border border-white/5 rounded-2xl p-5 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl backdrop-blur-md min-h-[220px]">
-              <div>
-                <h4 className="text-xl font-bold text-white mb-2">KiwiTaxi</h4>
-                <p className="text-sm text-neutral-400 leading-relaxed">Удобные и безопасные трансферы из аэропорта прямо до дверей вашего отеля.</p>
-              </div>
-              <a href="http://localhost:4000/out/kiwitaxi" target="_blank" rel="noopener noreferrer" className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition-all text-center uppercase tracking-wider mt-4 cursor-pointer block">
-                Заказать трансфер
-              </a>
-            </div>
-
-            {/* Saily */}
-            <div className="bg-neutral-900/60 border border-white/5 rounded-2xl p-5 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl backdrop-blur-md min-h-[220px]">
-              <div>
-                <h4 className="text-xl font-bold text-white mb-2">Saily</h4>
-                <p className="text-sm text-neutral-400 leading-relaxed">Глобальный eSIM-интернет для путешествий без лишних роуминговых платежей.</p>
-              </div>
-              <a href="http://localhost:4000/out/saily" target="_blank" rel="noopener noreferrer" className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition-all text-center uppercase tracking-wider mt-4 cursor-pointer block">
-                Подключить eSIM
-              </a>
-            </div>
-
-          </div>
-        </div>
-
-      </div>
+      <ResultsTabs />
     </div>
   );
 }
