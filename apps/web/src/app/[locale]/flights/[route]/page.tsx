@@ -9,16 +9,16 @@ export async function generateStaticParams() {
     'beg-tiv',
     'dxb-lon'
   ];
-  
+
   const locales = ['ru', 'en'];
   const params: any[] = [];
-  
+
   for (const locale of locales) {
     for (const route of topRoutes) {
       params.push({ locale, route });
     }
   }
-  
+
   return params;
 }
 
@@ -30,7 +30,7 @@ export default async function AeoFlightPage({
   const resolvedParams = await params;
   const locale = getLocale(resolvedParams.locale);
   const routeParam = resolvedParams.route || '';
-  
+
   const [originRaw, destinationRaw] = routeParam.split('-');
   const origin = (originRaw || 'SOF').toUpperCase();
   const destination = (destinationRaw || 'MAD').toUpperCase();
@@ -72,7 +72,7 @@ export default async function AeoFlightPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      
+
       <div className="w-full max-w-5xl mb-8 text-center relative z-10">
         <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
           Авиабилеты из <span className="text-blue-400">{origin}</span> в <span className="text-blue-400">{destination}</span> по умным маршрутам
@@ -83,16 +83,16 @@ export default async function AeoFlightPage({
       </div>
 
       <div className="w-full relative z-20 mb-16">
-        <SearchForm 
-          locale={locale} 
-          initialOrigin={origin} 
-          initialDestination={destination} 
+        <SearchForm
+          locale={locale}
+          initialOrigin={origin}
+          initialDestination={destination}
         />
       </div>
 
       <div className="w-full max-w-4xl mx-auto mt-12 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-8 text-left shadow-2xl relative z-10">
         <h2 className="text-2xl font-bold text-white mb-6">Частые вопросы (FAQ)</h2>
-        
+
         <div className="space-y-6">
           <div className="pb-6 border-b border-white/5">
             <h3 className="text-lg font-bold text-blue-400 mb-2">
@@ -102,13 +102,13 @@ export default async function AeoFlightPage({
               👉 Оптимальное время — за 4-6 недель до вылета. Используйте умную матрицу Flyntos, чтобы отследить минимальную цену в диапазоне +-3 дня.
             </p>
           </div>
-          
+
           <div className="pb-6 border-b border-white/5">
             <h3 className="text-lg font-bold text-blue-400 mb-2">
               ❓ Есть ли прямые рейсы из {origin} в {destination}?
             </h3>
             <p className="text-neutral-300 leading-relaxed">
-              👉 Доступность прямых рейсов зависит от сезонного расписания авиакомпаний. Нажмите 'Искать рейсы' на Flyntos, чтобы мгновенно проверить текущие прямые маршруты и альтернативные стыковки.
+              👉 Доступность прямых рейсов зависит от сезонного расписания авиакомпаний. Нажмите «Искать рейсы» на Flyntos, чтобы мгновенно проверить текущие прямые маршруты и альтернативные стыковки.
             </p>
           </div>
 
@@ -122,7 +122,7 @@ export default async function AeoFlightPage({
           </div>
         </div>
       </div>
-      
+
     </div>
   );
 }
