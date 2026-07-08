@@ -115,12 +115,22 @@ function CityAutocomplete({
   );
 }
 
-export function SearchForm({ locale, labels }: { locale: string; labels: any }) {
+export function SearchForm({ 
+  locale, 
+  labels,
+  initialOrigin = '',
+  initialDestination = ''
+}: { 
+  locale: string; 
+  labels?: any;
+  initialOrigin?: string;
+  initialDestination?: string;
+}) {
   const router = useRouter();
   const { step, setStep, steps } = useWizard();
 
-  const [fromCity, setFromCity] = useState('');
-  const [toCity, setToCity] = useState('');
+  const [fromCity, setFromCity] = useState(initialOrigin);
+  const [toCity, setToCity] = useState(initialDestination);
   const [departDate, setDepartDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
   const [adults, setAdults] = useState('1');
@@ -129,6 +139,7 @@ export function SearchForm({ locale, labels }: { locale: string; labels: any }) 
 
   useEffect(() => {
     async function detectLocation() {
+      if (initialOrigin) return; // Skip if already set
       try {
         const res = await fetch('https://ipapi.co/json/');
         if (res.ok) {
@@ -149,7 +160,7 @@ export function SearchForm({ locale, labels }: { locale: string; labels: any }) 
       }
     }
     detectLocation();
-  }, []);
+  }, [initialOrigin]);
 
   const handleReverse = useCallback(() => {
     const temp = fromCity;
@@ -161,10 +172,24 @@ export function SearchForm({ locale, labels }: { locale: string; labels: any }) 
     e.preventDefault();
     setIsLoading(true);
 
+    const resolveCode = (input: string) => {
+      const query = input.trim().toLowerCase();
+      if (!query) return '';
+      const altQuery = switchLayout(query);
+      const match = AIRPORTS.find(a => {
+        const target = `${a.code} ${a.name_ru} ${a.name_en} ${a.city_ru} ${a.city_en}`.toLowerCase();
+        return target.includes(query) || target.includes(altQuery);
+      });
+      return match ? match.code : input.toUpperCase();
+    };
+
+    const finalFrom = resolveCode(fromCity);
+    const finalTo = resolveCode(toCity);
+
     setTimeout(() => {
       const params = new URLSearchParams({
-        origin: fromCity,
-        destination: toCity,
+        origin: finalFrom,
+        destination: finalTo,
         departureDate: departDate,
         returnDate: returnDate,
         adults: adults,

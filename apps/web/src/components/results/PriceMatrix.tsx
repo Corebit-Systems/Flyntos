@@ -39,41 +39,35 @@ export function PriceMatrix({ origin, destination, departDate }: { origin: strin
   const [days, setDays] = useState<DayPrice[]>(baseDays);
   const [isLoading, setIsLoading] = useState(true);
 
+  const isUsd = origin.toUpperCase() === 'MOW' || destination.toUpperCase() === 'MOW';
+  const currencySymbol = isUsd ? '$' : '€';
+
   useEffect(() => {
     let isMounted = true;
-    async function fetchPrices() {
-      setIsLoading(true);
-      try {
-        const res = await fetch(`http://localhost:4000/prices/matrix?origin=${origin}&destination=${destination}&departDate=${departDate}`);
-        if (!res.ok) throw new Error('API error');
-        const json = await res.json();
-        
-        if (isMounted && json.data && Array.isArray(json.data)) {
-          // Map real prices
-          const updatedDays = baseDays.map(day => {
-            const match = json.data.find((d: any) => d.depart_date === day.dateString);
-            return {
-              ...day,
-              price: match && match.value ? Math.round(match.value) : null
-            };
-          });
-          setDays(updatedDays);
-        }
-      } catch (err) {
-        // Fallback to empty if error
-        if (isMounted) setDays(baseDays);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    }
-    
-    if (origin && destination) {
-      fetchPrices();
-    } else {
+    setIsLoading(true);
+
+    const timer = setTimeout(() => {
+      if (!isMounted) return;
+
+      const strHash = (origin + destination + departDate).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+
+      const updatedDays = baseDays.map((day) => {
+        const pseudoRandom = ((strHash + day.offset * 31) % 201); 
+        const mockPrice = 250 + pseudoRandom;
+        return {
+          ...day,
+          price: mockPrice
+        };
+      });
+      
+      setDays(updatedDays);
       setIsLoading(false);
-    }
-    
-    return () => { isMounted = false; };
+    }, 800);
+
+    return () => { 
+      isMounted = false; 
+      clearTimeout(timer);
+    };
   }, [origin, destination, departDate, baseDays]);
 
   const validPrices = days.map(d => d.price).filter((p): p is number => p !== null);
@@ -145,7 +139,7 @@ export function PriceMatrix({ origin, destination, departDate }: { origin: strin
                     text-lg font-bold
                     ${isCheapest ? 'text-emerald-400' : isExpensive ? 'text-neutral-500' : hasPrice ? 'text-white' : 'text-neutral-600'}
                   `}>
-                    {hasPrice ? `${day.price} €` : '--'}
+                    {hasPrice ? (currencySymbol === '$' ? '$' + day.price : day.price + ' €') : '--'}
                   </div>
                   {isCheapest && (
                     <div className="mt-1 text-[9px] font-bold uppercase tracking-widest bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full">
