@@ -1,10 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'next/navigation';
 
 export function ResultsTabs() {
   const [currentTab, setCurrentTab] = useState<'cars' | 'extras'>('cars');
+  const searchParams = useSearchParams();
+
+  const originCity = (searchParams.get('origin') || searchParams.get('from') || '').toUpperCase();
+  const destinationCity = (searchParams.get('destination') || searchParams.get('to') || '').toUpperCase();
+  const departDate = searchParams.get('departureDate') || searchParams.get('depart') || searchParams.get('date') || '';
 
   return (
     <div className="w-full max-w-5xl flex flex-col gap-6 relative z-10">
@@ -51,41 +57,70 @@ export function ResultsTabs() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {/* Section header */}
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-white">
+                  Транспорт в аэропорту <span className="text-blue-400">{destinationCity || '...'}</span>
+                </h3>
+                <p className="text-xs text-neutral-500 mt-1">Забронируйте авто или яхту в точке прилёта</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 
-                {/* AutoEurope */}
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl min-h-[220px]">
+                {/* Car 1 */}
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl">
                   <div>
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="text-xl font-bold text-white">Аренда автомобилей</h4>
-                      <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg">от 15 € / день</span>
-                    </div>
-                    <p className="text-sm text-neutral-400 leading-relaxed mb-4">
-                      Сравните цены 500+ прокатчиков. Без скрытых комиссий, бесплатная отмена.
-                    </p>
+                    <div 
+                      className="w-full h-32 bg-cover bg-center rounded-xl mb-4" 
+                      style={{ backgroundImage: "url('https://images.unsplash.com/photo-1549317661-bd32c8ce0be2?w=800&q=80')" }}
+                    />
+                    <h4 className="text-lg font-bold text-white mb-2">Compact SUV</h4>
+                    <p className="text-xs font-bold text-neutral-300 mb-2">Nissan Qashqai / Kia Sportage</p>
+                    <p className="text-xs text-neutral-400 mb-4 line-clamp-3">Оптимальный выбор для комфортных поездок по побережью и горным серпантинам.</p>
+                    <div className="text-xl font-bold text-emerald-400 mb-6">от 35 € <span className="text-xs text-neutral-500 font-normal">/ день</span></div>
                   </div>
-                  <a href="http://localhost:4000/out/autoeurope" target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
-                    Найти авто
+                  <a href={`http://localhost:4000/out/autoeurope?from=${originCity}&to=${destinationCity}&date=${departDate}`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
+                    Аренда авто в {destinationCity}
                   </a>
                 </div>
 
-                {/* SEARADAR */}
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl min-h-[220px]">
+                {/* Car 2 */}
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl">
                   <div>
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="text-xl font-bold text-white">Аренда яхт и катамаранов</h4>
-                      <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg">от 250 € / день</span>
-                    </div>
-                    <p className="text-sm text-neutral-400 leading-relaxed mb-4">
-                      Премиальный чартер для отдыха в Черногории, Хорватии и по всему миру. С капитаном или без.
-                    </p>
+                    <div 
+                      className="w-full h-32 bg-cover bg-center rounded-xl mb-4" 
+                      style={{ backgroundImage: "url('https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=800&q=80')" }}
+                    />
+                    <h4 className="text-lg font-bold text-white mb-2">Бюджетный хэтчбек</h4>
+                    <p className="text-xs font-bold text-neutral-300 mb-2">Fiat 500 / Hyundai i20</p>
+                    <p className="text-xs text-neutral-400 mb-4 line-clamp-3">Идеально для узких улочек старых городов и легкой парковки.</p>
+                    <div className="text-xl font-bold text-emerald-400 mb-6">от 18 € <span className="text-xs text-neutral-500 font-normal">/ день</span></div>
                   </div>
-                  <a href="http://localhost:4000/out/searadar" target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
-                    Выбрать яхту
+                  <a href={`http://localhost:4000/out/autoeurope?from=${originCity}&to=${destinationCity}&date=${departDate}`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
+                    Аренда авто в {destinationCity}
+                  </a>
+                </div>
+
+                {/* Yacht 1 */}
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl">
+                  <div>
+                    <div 
+                      className="w-full h-32 bg-cover bg-center rounded-xl mb-4" 
+                      style={{ backgroundImage: "url('https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=800&q=80')" }}
+                    />
+                    <h4 className="text-lg font-bold text-white mb-2">Парусный Катамаран</h4>
+                    <p className="text-xs font-bold text-neutral-300 mb-2">Lagoon 40 / Dufour 460</p>
+                    <p className="text-xs text-neutral-400 mb-4 line-clamp-3">Премиальный чартер. Доступно с капитаном или без — мировые марины.</p>
+                    <div className="text-xl font-bold text-emerald-400 mb-6">от 250 € <span className="text-xs text-neutral-500 font-normal">/ день</span></div>
+                  </div>
+                  <a href={`http://localhost:4000/out/searadar?from=${originCity}&to=${destinationCity}&date=${departDate}`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
+                    Чартер из {destinationCity}
                   </a>
                 </div>
 
               </div>
+
             </motion.div>
           )}
 
@@ -104,7 +139,7 @@ export function ResultsTabs() {
                   <div>
                     <h4 className="text-lg font-bold text-white mb-2">Комфортный трансфер</h4>
                     <p className="text-sm text-neutral-400 leading-relaxed mb-4">
-                      Трансферы из аэропортов Тивата и Подгорицы с табличкой.
+                      Трансферы встречающий с табличкой из аэропортов и вокзалов по всему миру.
                     </p>
                   </div>
                   <a href="http://localhost:4000/out/kiwitaxi" target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">

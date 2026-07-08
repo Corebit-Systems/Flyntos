@@ -37,11 +37,16 @@ function CityAutocomplete({
   label: string 
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState(value);
+  // displayValue shows city name after selection, raw code while typing
+  const [displayValue, setDisplayValue] = useState(value);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
+  // Sync display if parent resets value (e.g. swap)
   useEffect(() => {
-    setSearch(value);
+    if (!value) { setDisplayValue(''); return; }
+    // If value is an IATA code, try to show city name
+    const airport = AIRPORTS.find(a => a.code === value.toUpperCase());
+    setDisplayValue(airport ? (airport.city_ru || airport.city_en || value) : value);
   }, [value]);
 
   useEffect(() => {
@@ -54,12 +59,23 @@ function CityAutocomplete({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const query = search.toLowerCase();
+  const query = displayValue.toLowerCase();
   const altQuery = switchLayout(query);
 
-  const results = !query ? [] : AIRPORTS.filter(a => {
+  const results = !query || query.length < 1 ? [] : AIRPORTS.filter(a => {
     const target = `${a.code} ${a.name_ru} ${a.name_en} ${a.city_ru} ${a.city_en}`.toLowerCase();
     return target.includes(query) || target.includes(altQuery);
+  }).sort((a, b) => {
+    // Priority: exact code match > city starts with > name starts with > contains
+    const score = (airport: Airport) => {
+      const q = query;
+      if (airport.code.toLowerCase() === q) return 100;
+      if (airport.city_en?.toLowerCase() === q || airport.city_ru?.toLowerCase() === q) return 90;
+      if (airport.city_en?.toLowerCase().startsWith(q) || airport.city_ru?.toLowerCase().startsWith(q)) return 70;
+      if (airport.name_en?.toLowerCase().startsWith(q) || airport.name_ru?.toLowerCase().startsWith(q)) return 50;
+      return 10;
+    };
+    return score(b) - score(a);
   }).slice(0, 8);
 
   return (
@@ -67,14 +83,14 @@ function CityAutocomplete({
       <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1 px-1">{label}</label>
       <input
         className="w-full bg-neutral-950 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-semibold tracking-wide focus:outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/50 transition-all font-mono"
-        value={search}
+        value={displayValue}
         onChange={(e) => {
-          setSearch(e.target.value.toUpperCase());
+          setDisplayValue(e.target.value);
           onChange(e.target.value.toUpperCase());
           setIsOpen(true);
         }}
         onFocus={() => {
-          if (search) setIsOpen(true);
+          if (displayValue) setIsOpen(true);
         }}
         placeholder={placeholder}
         required
@@ -93,8 +109,9 @@ function CityAutocomplete({
               <div
                 key={item.code}
                 onClick={() => {
+                  console.log('===> SELECTED DESTINATION IATA:', item.code, '| City:', item.city_en);
                   onChange(item.code);
-                  setSearch(item.code);
+                  setDisplayValue(item.city_ru || item.city_en || item.code);
                   setIsOpen(false);
                 }}
                 className="hover:bg-blue-600/20 px-4 py-3 transition-all flex justify-between items-center cursor-pointer text-sm border-b border-white/5 last:border-none"
@@ -172,15 +189,88 @@ export function SearchForm({
     e.preventDefault();
     setIsLoading(true);
 
-    const resolveCode = (input: string) => {
+    const resolveCode = (input: string): string => {
       const query = input.trim().toLowerCase();
       if (!query) return '';
+
+      // 1. Exact IATA code match (case-insensitive)
+      const exactCode = AIRPORTS.find(a => a.code.toLowerCase() === query);
+      if (exactCode) {
+        console.log('===> RESOLVED (exact code):', exactCode.code);
+        return exactCode.code;
+      }
+
+      // 2. Exact city name match (ru or en)
+      const exactCity = AIRPORTS.find(a =>
+        a.city_en?.toLowerCase() === query || a.city_ru?.toLowerCase() === query
+      );
+      if (exactCity) {
+        console.log('===> RESOLVED (exact city):', exactCity.code, exactCity.city_en);
+        return exactCity.code;
+      }
+
+      // 3. City name startsWith
+      const startsWithCity = AIRPORTS.find(a =>
+        a.city_en?.toLowerCase().startsWith(query) || a.city_ru?.toLowerCase().startsWith(query)
+      );
+      if (startsWithCity) {
+        console.log('===> RESOLVED (city startsWith):', startsWithCity.code, startsWithCity.city_en);
+        return startsWithCity.code;
+      }
+
       const altQuery = switchLayout(query);
-      const match = AIRPORTS.find(a => {
+
+      // 4. Airport name startsWith (ru/en)
+      const startsWithName = AIRPORTS.find(a =>
+        a.name_en?.toLowerCase().startsWith(query) ||
+        a.name_ru?.toLowerCase().startsWith(query) ||
+        a.name_en?.toLowerCase().startsWith(altQuery) ||
+        a.name_ru?.toLowerCase().startsWith(altQuery)
+      );
+      if (startsWithName) {
+        console.log('===> RESOLVED (name startsWith):', startsWithName.code, startsWithName.name_en);
+        return startsWithName.code;
+      }
+
+      // 5. Fallback — known city overrides to prevent wrong matches
+      const knownOverrides: Record<string, string> = {
+        'rome': 'ROM', 'рим': 'ROM',
+        'paris': 'PAR', 'париж': 'PAR',
+        'london': 'LON', 'лондон': 'LON',
+        'new york': 'NYC', 'нью-йорк': 'NYC',
+        'dubai': 'DXB', 'дубай': 'DXB',
+        'istanbul': 'IST', 'стамбул': 'IST',
+        'barcelona': 'BCN', 'барселона': 'BCN',
+        'madrid': 'MAD', 'мадрид': 'MAD',
+        'milan': 'MIL', 'милан': 'MIL',
+        'amsterdam': 'AMS', 'амстердам': 'AMS',
+        'berlin': 'BER', 'берлин': 'BER',
+        'vienna': 'VIE', 'вена': 'VIE',
+        'prague': 'PRG', 'прага': 'PRG',
+        'athens': 'ATH', 'афины': 'ATH',
+        'sofia': 'SOF', 'софия': 'SOF',
+        'podgorica': 'TGD', 'подгорица': 'TGD',
+        'tivat': 'TIV', 'тиват': 'TIV',
+      };
+      for (const [cityName, code] of Object.entries(knownOverrides)) {
+        if (query.includes(cityName) || altQuery.includes(cityName)) {
+          console.log('===> RESOLVED (known override):', code, 'for input:', query);
+          return code;
+        }
+      }
+
+      // 6. Last resort: substring includes
+      const fallback = AIRPORTS.find(a => {
         const target = `${a.code} ${a.name_ru} ${a.name_en} ${a.city_ru} ${a.city_en}`.toLowerCase();
         return target.includes(query) || target.includes(altQuery);
       });
-      return match ? match.code : input.toUpperCase();
+      if (fallback) {
+        console.log('===> RESOLVED (fallback substring):', fallback.code, 'for input:', query);
+        return fallback.code;
+      }
+
+      console.log('===> RESOLVED (raw input as-is):', input.toUpperCase());
+      return input.toUpperCase();
     };
 
     const finalFrom = resolveCode(fromCity);

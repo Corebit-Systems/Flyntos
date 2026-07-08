@@ -43,31 +43,43 @@ export function PriceMatrix({ origin, destination, departDate }: { origin: strin
   const currencySymbol = isUsd ? '$' : '€';
 
   useEffect(() => {
+    if (!origin || !destination || origin.length < 3 || destination.length < 3) {
+      setIsLoading(false);
+      return;
+    }
+
     let isMounted = true;
     setIsLoading(true);
 
-    const timer = setTimeout(() => {
-      if (!isMounted) return;
+    const params = new URLSearchParams({
+      origin,
+      destination,
+      ...(departDate ? { depart_date: departDate } : {})
+    });
 
-      const strHash = (origin + destination + departDate).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    fetch(`http://localhost:4000/api/prices?${params.toString()}`)
+      .then(res => res.json())
+      .then((json: { data: Array<{ date: string; price: number | null }> }) => {
+        if (!isMounted) return;
 
-      const updatedDays = baseDays.map((day) => {
-        const pseudoRandom = ((strHash + day.offset * 31) % 201); 
-        const mockPrice = 250 + pseudoRandom;
-        return {
+        // Map API days onto our 7-day baseDays window
+        const priceMap: Record<string, number | null> = {};
+        (json.data || []).forEach(d => { priceMap[d.date] = d.price; });
+
+        const updatedDays = baseDays.map(day => ({
           ...day,
-          price: mockPrice
-        };
-      });
-      
-      setDays(updatedDays);
-      setIsLoading(false);
-    }, 800);
+          price: priceMap[day.dateString] ?? null
+        }));
 
-    return () => { 
-      isMounted = false; 
-      clearTimeout(timer);
-    };
+        setDays(updatedDays);
+      })
+      .catch(() => {
+        // On network error show nulls — no fakes
+        if (isMounted) setDays(baseDays.map(d => ({ ...d, price: null })));
+      })
+      .finally(() => { if (isMounted) setIsLoading(false); });
+
+    return () => { isMounted = false; };
   }, [origin, destination, departDate, baseDays]);
 
   const validPrices = days.map(d => d.price).filter((p): p is number => p !== null);
