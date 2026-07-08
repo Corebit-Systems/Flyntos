@@ -1,10 +1,119 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWizard } from '../../hooks/useWizard';
 import { scenarios } from '@flyntos/config';
 import { motion, AnimatePresence } from 'framer-motion';
+import airportsData from '../../data/airports.json';
+
+const enToRu: Record<string, string> = { 'q': 'й', 'w': 'ц', 'e': 'у', 'r': 'к', 't': 'е', 'y': 'н', 'u': 'г', 'i': 'ш', 'o': 'щ', 'p': 'з', '[': 'х', ']': 'ъ', 'a': 'ф', 's': 'ы', 'd': 'в', 'f': 'а', 'g': 'п', 'h': 'р', 'j': 'о', 'k': 'л', 'l': 'д', ';': 'ж', "'": 'э', 'z': 'я', 'x': 'ч', 'c': 'с', 'v': 'м', 'b': 'и', 'n': 'т', 'm': 'ь', ',': 'б', '.': 'ю' };
+const ruToEn: Record<string, string> = Object.fromEntries(Object.entries(enToRu).map(([k, v]) => [v, k]));
+
+function switchLayout(str: string) {
+  return str.split('').map(c => enToRu[c.toLowerCase()] || ruToEn[c.toLowerCase()] || c).join('');
+}
+
+interface Airport {
+  code: string;
+  name_ru: string;
+  name_en: string;
+  city_ru: string;
+  city_en: string;
+  country_ru: string;
+}
+
+const AIRPORTS = airportsData as Airport[];
+
+function CityAutocomplete({ 
+  value, 
+  onChange, 
+  placeholder, 
+  label 
+}: { 
+  value: string, 
+  onChange: (val: string) => void, 
+  placeholder: string, 
+  label: string 
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState(value);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setSearch(value);
+  }, [value]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const query = search.toLowerCase();
+  const altQuery = switchLayout(query);
+
+  const results = !query ? [] : AIRPORTS.filter(a => {
+    const target = `${a.code} ${a.name_ru} ${a.name_en} ${a.city_ru} ${a.city_en}`.toLowerCase();
+    return target.includes(query) || target.includes(altQuery);
+  }).slice(0, 8);
+
+  return (
+    <div className="flex flex-col flex-1 min-w-[120px] relative" ref={wrapperRef}>
+      <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1 px-1">{label}</label>
+      <input
+        className="w-full bg-neutral-950 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-semibold tracking-wide focus:outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/50 transition-all font-mono"
+        value={search}
+        onChange={(e) => {
+          setSearch(e.target.value.toUpperCase());
+          onChange(e.target.value.toUpperCase());
+          setIsOpen(true);
+        }}
+        onFocus={() => {
+          if (search) setIsOpen(true);
+        }}
+        placeholder={placeholder}
+        required
+      />
+
+      <AnimatePresence>
+        {isOpen && results.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            transition={{ duration: 0.15 }}
+            className="absolute left-0 right-0 top-full mt-2 z-50 bg-neutral-900/95 backdrop-blur-xl border border-white/10 rounded-xl max-h-60 overflow-y-auto shadow-2xl custom-scrollbar"
+          >
+            {results.map((item) => (
+              <div
+                key={item.code}
+                onClick={() => {
+                  onChange(item.code);
+                  setSearch(item.code);
+                  setIsOpen(false);
+                }}
+                className="hover:bg-blue-600/20 px-4 py-3 transition-all flex justify-between items-center cursor-pointer text-sm border-b border-white/5 last:border-none"
+              >
+                <div className="flex flex-col text-left">
+                  <span className="text-white font-medium">{item.city_ru || item.name_en || item.code}</span>
+                  <span className="text-neutral-400 text-xs">{item.country_ru}</span>
+                </div>
+                <span className="font-mono text-xs font-bold text-blue-400 bg-blue-500/10 px-2 py-1 rounded shrink-0 ml-2">
+                  {item.code}
+                </span>
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export function SearchForm({ locale, labels }: { locale: string; labels: any }) {
   const router = useRouter();
@@ -104,17 +213,13 @@ export function SearchForm({ locale, labels }: { locale: string; labels: any }) 
             </div>
 
             <form onSubmit={handleSubmit} className="w-full max-w-6xl mx-auto bg-neutral-900/90 backdrop-blur-md border border-white/10 rounded-2xl p-4 flex flex-col md:flex-row items-stretch gap-3 shadow-2xl relative z-10">
-              {/* Origin */}
-              <div className="flex flex-col flex-1 min-w-[120px]">
-                <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1 px-1">{labels?.from || 'From'}</label>
-                <input
-                  className="w-full bg-neutral-950 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-semibold tracking-wide focus:outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/50 transition-all font-mono"
-                  value={fromCity}
-                  onChange={(e) => setFromCity(e.target.value.toUpperCase())}
-                  placeholder="SOF"
-                  required
-                />
-              </div>
+              
+              <CityAutocomplete 
+                label={labels?.from || 'From'}
+                placeholder="SOF"
+                value={fromCity}
+                onChange={setFromCity}
+              />
 
               {/* Reversal Button */}
               <div className="flex items-center justify-center md:self-end pb-1.5 px-1">
@@ -130,17 +235,12 @@ export function SearchForm({ locale, labels }: { locale: string; labels: any }) 
                 </button>
               </div>
 
-              {/* Destination */}
-              <div className="flex flex-col flex-1 min-w-[120px]">
-                <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1 px-1">{labels?.to || 'To'}</label>
-                <input
-                  className="w-full bg-neutral-950 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-semibold tracking-wide focus:outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/50 transition-all font-mono"
-                  value={toCity}
-                  onChange={(e) => setToCity(e.target.value.toUpperCase())}
-                  placeholder="MAD"
-                  required
-                />
-              </div>
+              <CityAutocomplete 
+                label={labels?.to || 'To'}
+                placeholder="MAD"
+                value={toCity}
+                onChange={setToCity}
+              />
 
               {/* Departure Date */}
               <div className="flex flex-col flex-1 min-w-[120px]">
