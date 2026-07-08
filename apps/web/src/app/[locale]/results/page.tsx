@@ -1,5 +1,6 @@
 import { getDictionary } from '@flyntos/i18n';
 import { getLocale } from '../../../lib/get-locale';
+import { PriceMatrix } from '../../../components/results/PriceMatrix';
 
 // Simple XSS sanitization (Next.js automatically escapes in JSX, but this is a requested explicit sanitization)
 const sanitize = (str: string | undefined | null) => {
@@ -20,9 +21,11 @@ export default async function ResultsPage({
   // Try to match 'origin' from the form we just wrote or 'from' as requested by user
   const originRaw = currentSearch.origin?.trim() || currentSearch.from?.trim() || 'SOF';
   const destinationRaw = currentSearch.destination?.trim() || currentSearch.to?.trim() || 'MAD';
+  const departDateRaw = currentSearch.departureDate?.trim() || currentSearch.depart?.trim() || '';
 
   const safeOrigin = sanitize(originRaw).toUpperCase();
   const safeDestination = sanitize(destinationRaw).toUpperCase();
+  const safeDepartDate = sanitize(departDateRaw);
 
   return (
     <div className="min-h-screen pt-32 pb-16 px-4 relative flex flex-col items-center">
@@ -45,6 +48,8 @@ export default async function ResultsPage({
           Перейти к билетам вручную
         </a>
       </div>
+
+      <PriceMatrix origin={safeOrigin} destination={safeDestination} departDate={safeDepartDate} />
 
       <div className="w-full max-w-5xl flex flex-col gap-12 relative z-10">
         
