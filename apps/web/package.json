@@ -10,11 +10,11 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@flyntos/config": "workspace:*",
-    "@flyntos/i18n": "workspace:*",
-    "@flyntos/seo-engine": "workspace:*",
-    "@flyntos/shared": "workspace:*",
-    "@flyntos/ui": "workspace:*",
+    "@flyntos/config": "file:../../packages/config",
+    "@flyntos/i18n": "file:../../packages/i18n",
+    "@flyntos/seo-engine": "file:../../packages/seo-engine",
+    "@flyntos/shared": "file:../../packages/shared",
+    "@flyntos/ui": "file:../../packages/ui",
     "framer-motion": "^12.42.2",
     "next": "^15.2.4",
     "react": "^19.0.0",
