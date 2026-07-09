@@ -111,7 +111,7 @@ export function PriceMatrix({ origin, destination, departDate }: { origin: strin
     if (children && children !== '0') aviasalesParams.set('children', children);
     
     const searchUrl = `https://www.aviasales.com/search?${aviasalesParams.toString()}`;
-    const targetUrl = `https://tp.media/r?marker=547770&trs=547770&p=4114&campaign_id=100&u=${encodeURIComponent(searchUrl)}`;
+    const targetUrl = `https://tp.media/r?marker=547770&p=4114&campaign_id=100&u=${encodeURIComponent(searchUrl)}`;
 
     window.open(targetUrl, '_blank');
   };

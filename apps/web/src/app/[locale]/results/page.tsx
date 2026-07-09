@@ -61,7 +61,7 @@ export default async function ResultsPage({
     if (children && children !== '0') params.set('children', children);
     
     const searchUrl = `https://www.aviasales.com/search?${params.toString()}`;
-    return `https://tp.media/r?marker=547770&trs=547770&p=4114&campaign_id=100&u=${encodeURIComponent(searchUrl)}`;
+    return `https://tp.media/r?marker=547770&p=4114&campaign_id=100&u=${encodeURIComponent(searchUrl)}`;
   })();
 
   return (

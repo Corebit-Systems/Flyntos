@@ -177,7 +177,7 @@ export function SearchForm({
 
   const datePattern = useMemo(() => {
     try {
-      const parts = new Intl.DateTimeFormat(locale).formatToParts(new Date(2000, 11, 31));
+      const parts = new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).formatToParts(new Date(2000, 11, 31));
       return parts.map(p => {
         if (p.type === 'day') return 'DD';
         if (p.type === 'month') return 'MM';
@@ -192,7 +192,8 @@ export function SearchForm({
   const formatDate = useCallback((dateStr: string) => {
     if (!dateStr) return '';
     try {
-      return new Intl.DateTimeFormat(locale).format(new Date(dateStr));
+      // Force 2-digit to prevent "9/1/2026" instead of "01.09.2026"
+      return new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(dateStr));
     } catch {
       return dateStr;
     }
@@ -429,30 +430,42 @@ export function SearchForm({
               {/* Departure Date */}
               <div className="flex flex-col flex-1 min-w-[120px]">
                 <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1 px-1">{labels?.depart || 'Depart'}</label>
-                <input
-                  className="w-full bg-neutral-950 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-semibold tracking-wide focus:outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/50 transition-all font-mono"
-                  type={departFocused ? "date" : "text"}
-                  onFocus={() => setDepartFocused(true)}
-                  onBlur={() => setDepartFocused(false)}
-                  value={departFocused ? departDate : formatDate(departDate)}
-                  placeholder={datePattern}
-                  onChange={(e) => setDepartDate(e.target.value)}
-                  required
-                />
+                <div className="relative w-full">
+                  <input
+                    className={`w-full bg-neutral-950 border border-white/5 rounded-xl px-4 py-3 text-sm font-semibold tracking-wide focus:outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/50 transition-all font-mono z-20 relative cursor-pointer [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer ${!departFocused && departDate ? 'text-transparent' : 'text-white'}`}
+                    type="date"
+                    value={departDate}
+                    onFocus={() => setDepartFocused(true)}
+                    onBlur={() => setDepartFocused(false)}
+                    onChange={(e) => setDepartDate(e.target.value)}
+                    required
+                  />
+                  {!departFocused && departDate && (
+                    <div className="absolute inset-0 px-4 py-3 pointer-events-none flex items-center z-10 text-white text-sm font-semibold font-mono">
+                      {formatDate(departDate)}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Return Date */}
               <div className="flex flex-col flex-1 min-w-[120px]">
                 <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1 px-1">{labels?.return || 'Return'}</label>
-                <input
-                  className="w-full bg-neutral-950 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-semibold tracking-wide focus:outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/50 transition-all font-mono"
-                  type={returnFocused ? "date" : "text"}
-                  onFocus={() => setReturnFocused(true)}
-                  onBlur={() => setReturnFocused(false)}
-                  value={returnFocused ? returnDate : formatDate(returnDate)}
-                  placeholder={datePattern}
-                  onChange={(e) => setReturnDate(e.target.value)}
-                />
+                <div className="relative w-full">
+                  <input
+                    className={`w-full bg-neutral-950 border border-white/5 rounded-xl px-4 py-3 text-sm font-semibold tracking-wide focus:outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/50 transition-all font-mono z-20 relative cursor-pointer [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer ${!returnFocused && returnDate ? 'text-transparent' : 'text-white'}`}
+                    type="date"
+                    value={returnDate}
+                    onFocus={() => setReturnFocused(true)}
+                    onBlur={() => setReturnFocused(false)}
+                    onChange={(e) => setReturnDate(e.target.value)}
+                  />
+                  {!returnFocused && returnDate && (
+                    <div className="absolute inset-0 px-4 py-3 pointer-events-none flex items-center z-10 text-white text-sm font-semibold font-mono">
+                      {formatDate(returnDate)}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Adults */}
