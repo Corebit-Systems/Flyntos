@@ -68,10 +68,16 @@ export function PriceMatrix({ origin, destination, departDate }: { origin: strin
         const priceMap: Record<string, number | null> = {};
         (json.data || []).forEach(d => { priceMap[d.date] = d.price; });
 
-        const updatedDays = baseDays.map(day => ({
-          ...day,
-          price: priceMap[day.dateString] ?? null
-        }));
+        const hasReturnDate = searchParams.has('returnDate') && !!searchParams.get('returnDate');
+        const mult = hasReturnDate ? 2 : 1;
+
+        const updatedDays = baseDays.map(day => {
+          const rawPrice = priceMap[day.dateString] ?? null;
+          return {
+            ...day,
+            price: rawPrice !== null ? rawPrice * mult : null
+          };
+        });
 
         setDays(updatedDays);
       })

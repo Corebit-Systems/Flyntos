@@ -29,12 +29,14 @@ function CityAutocomplete({
   value, 
   onChange, 
   placeholder, 
-  label 
+  label,
+  locale 
 }: { 
   value: string, 
   onChange: (val: string) => void, 
   placeholder: string, 
-  label: string 
+  label: string,
+  locale: string 
 }) {
   const [isOpen, setIsOpen] = useState(false);
   // displayValue shows city name after selection, raw code while typing
@@ -46,8 +48,9 @@ function CityAutocomplete({
     if (!value) { setDisplayValue(''); return; }
     // If value is an IATA code, try to show city name
     const airport = AIRPORTS.find(a => a.code === value.toUpperCase());
-    setDisplayValue(airport ? (airport.city_ru || airport.city_en || value) : value);
-  }, [value]);
+    const isRu = locale === 'ru' || locale === 'uk' || locale === 'be' || locale === 'kk';
+    setDisplayValue(airport ? (isRu ? (airport.city_ru || airport.name_ru || airport.city_en) : (airport.city_en || airport.name_en || airport.city_ru)) : value);
+  }, [value, locale]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -122,26 +125,30 @@ function CityAutocomplete({
             transition={{ duration: 0.15 }}
             className="absolute left-0 right-0 top-full mt-2 z-50 bg-neutral-900/95 backdrop-blur-xl border border-white/10 rounded-xl max-h-60 overflow-y-auto shadow-2xl custom-scrollbar"
           >
-            {results.map((item) => (
-              <div
-                key={item.code}
-                onClick={() => {
-                  console.log('===> SELECTED DESTINATION IATA:', item.code, '| City:', item.city_en);
-                  onChange(item.code);
-                  setDisplayValue(item.city_ru || item.city_en || item.code);
-                  setIsOpen(false);
-                }}
-                className="hover:bg-blue-600/20 px-4 py-3 transition-all flex justify-between items-center cursor-pointer text-sm border-b border-white/5 last:border-none"
-              >
-                <div className="flex flex-col text-left">
-                  <span className="text-white font-medium">{item.city_ru || item.name_en || item.code}</span>
-                  <span className="text-neutral-400 text-xs">{item.country_ru}</span>
+            {results.map((item) => {
+              const isRu = locale === 'ru' || locale === 'uk' || locale === 'be' || locale === 'kk';
+              const displayName = isRu ? (item.city_ru || item.name_ru || item.city_en) : (item.city_en || item.name_en || item.city_ru);
+              
+              return (
+                <div
+                  key={item.code}
+                  onClick={() => {
+                    onChange(item.code);
+                    setDisplayValue(displayName);
+                    setIsOpen(false);
+                  }}
+                  className="hover:bg-blue-600/20 px-4 py-3 transition-all flex justify-between items-center cursor-pointer text-sm border-b border-white/5 last:border-none"
+                >
+                  <div className="flex flex-col text-left">
+                    <span className="text-white font-medium">{displayName}</span>
+                    <span className="text-neutral-400 text-xs">{item.country_ru}</span>
+                  </div>
+                  <span className="font-mono text-xs font-bold text-blue-400 bg-blue-500/10 px-2 py-1 rounded shrink-0 ml-2">
+                    {item.code}
+                  </span>
                 </div>
-                <span className="font-mono text-xs font-bold text-blue-400 bg-blue-500/10 px-2 py-1 rounded shrink-0 ml-2">
-                  {item.code}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </motion.div>
         )}
       </AnimatePresence>
@@ -237,47 +244,9 @@ export function SearchForm({
     const resolveCode = (input: string): string => {
       const query = input.trim().toLowerCase();
       if (!query) return '';
-
-      // 1. Exact IATA code match (case-insensitive)
-      const exactCode = AIRPORTS.find(a => a.code.toLowerCase() === query);
-      if (exactCode) {
-        console.log('===> RESOLVED (exact code):', exactCode.code);
-        return exactCode.code;
-      }
-
-      // 2. Exact city name match (ru or en)
-      const exactCity = AIRPORTS.find(a =>
-        a.city_en?.toLowerCase() === query || a.city_ru?.toLowerCase() === query
-      );
-      if (exactCity) {
-        console.log('===> RESOLVED (exact city):', exactCity.code, exactCity.city_en);
-        return exactCity.code;
-      }
-
-      // 3. City name startsWith
-      const startsWithCity = AIRPORTS.find(a =>
-        a.city_en?.toLowerCase().startsWith(query) || a.city_ru?.toLowerCase().startsWith(query)
-      );
-      if (startsWithCity) {
-        console.log('===> RESOLVED (city startsWith):', startsWithCity.code, startsWithCity.city_en);
-        return startsWithCity.code;
-      }
-
       const altQuery = switchLayout(query);
 
-      // 4. Airport name startsWith (ru/en)
-      const startsWithName = AIRPORTS.find(a =>
-        a.name_en?.toLowerCase().startsWith(query) ||
-        a.name_ru?.toLowerCase().startsWith(query) ||
-        a.name_en?.toLowerCase().startsWith(altQuery) ||
-        a.name_ru?.toLowerCase().startsWith(altQuery)
-      );
-      if (startsWithName) {
-        console.log('===> RESOLVED (name startsWith):', startsWithName.code, startsWithName.name_en);
-        return startsWithName.code;
-      }
-
-      // 5. Fallback — known city overrides to prevent wrong matches
+      // 1. Fallback — known city overrides to prevent wrong matches (PRIORITY)
       const knownOverrides: Record<string, string> = {
         'rome': 'ROM', 'рим': 'ROM',
         'paris': 'PAR', 'париж': 'PAR',
@@ -299,11 +268,34 @@ export function SearchForm({
       };
       for (const [cityName, code] of Object.entries(knownOverrides)) {
         if (query.includes(cityName) || altQuery.includes(cityName)) {
-          console.log('===> RESOLVED (known override):', code, 'for input:', query);
           return code;
         }
       }
 
+      // 2. Exact IATA code match (case-insensitive)
+      const exactCode = AIRPORTS.find(a => a.code.toLowerCase() === query);
+      if (exactCode) return exactCode.code;
+
+      // 3. Exact city name match (ru or en)
+      const exactCity = AIRPORTS.find(a =>
+        a.city_en?.toLowerCase() === query || a.city_ru?.toLowerCase() === query
+      );
+      if (exactCity) return exactCity.code;
+
+      // 4. City name startsWith
+      const startsWithCity = AIRPORTS.find(a =>
+        a.city_en?.toLowerCase().startsWith(query) || a.city_ru?.toLowerCase().startsWith(query)
+      );
+      if (startsWithCity) return startsWithCity.code;
+
+      // 5. Airport name startsWith (ru/en)
+      const startsWithName = AIRPORTS.find(a =>
+        a.name_en?.toLowerCase().startsWith(query) ||
+        a.name_ru?.toLowerCase().startsWith(query) ||
+        a.name_en?.toLowerCase().startsWith(altQuery) ||
+        a.name_ru?.toLowerCase().startsWith(altQuery)
+      );
+      if (startsWithName) return startsWithName.code;
       // 6. Last resort: substring includes
       const fallback = AIRPORTS.find(a => {
         const target = `${a.code} ${a.name_ru} ${a.name_en} ${a.city_ru} ${a.city_en}`.toLowerCase();
@@ -404,6 +396,7 @@ export function SearchForm({
                 placeholder=""
                 value={fromCity}
                 onChange={setFromCity}
+                locale={locale}
               />
 
               {/* Reversal Button */}
@@ -425,6 +418,7 @@ export function SearchForm({
                 placeholder=""
                 value={toCity}
                 onChange={setToCity}
+                locale={locale}
               />
 
               {/* Departure Date */}
@@ -441,7 +435,7 @@ export function SearchForm({
                     required
                   />
                   {!departFocused && departDate && (
-                    <div className="absolute inset-0 px-4 py-3 pointer-events-none flex items-center z-10 text-white text-sm font-semibold font-mono">
+                    <div className="absolute inset-0 px-4 py-3 pointer-events-none flex items-center z-30 text-white text-sm font-semibold font-mono bg-neutral-950 rounded-xl">
                       {formatDate(departDate)}
                     </div>
                   )}
@@ -461,9 +455,25 @@ export function SearchForm({
                     onChange={(e) => setReturnDate(e.target.value)}
                   />
                   {!returnFocused && returnDate && (
-                    <div className="absolute inset-0 px-4 py-3 pointer-events-none flex items-center z-10 text-white text-sm font-semibold font-mono">
+                    <div className="absolute inset-0 px-4 py-3 pointer-events-none flex items-center z-30 text-white text-sm font-semibold font-mono bg-neutral-950 rounded-xl">
                       {formatDate(returnDate)}
                     </div>
+                  )}
+                  {returnDate && (
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 bg-neutral-800/80 hover:bg-neutral-700 text-neutral-400 hover:text-white rounded-full z-40 transition-all"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        setReturnDate('');
+                      }}
+                      title="Clear (One-way)"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </button>
                   )}
                 </div>
               </div>
