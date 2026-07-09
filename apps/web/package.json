@@ -23,6 +23,9 @@
   "devDependencies": {
     "tailwindcss": "^3.4.1",
     "postcss": "^8.4.31",
-    "autoprefixer": "^10.4.16"
+    "autoprefixer": "^10.4.16",
+    "typescript": "5.8.2",
+    "@types/react": "^19.0.0",
+    "@types/node": "20.17.6"
   }
 }
