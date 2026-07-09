@@ -25,6 +25,41 @@ interface Airport {
 
 const AIRPORTS = airportsData as Airport[];
 
+function scoreAirport(airport: Airport, query: string, altQuery: string): number {
+  const q = query.trim().toLowerCase();
+  const alt = altQuery.trim().toLowerCase();
+  if (!q) return 0;
+
+  let s = 0;
+  const isExactCode = airport.code.toLowerCase() === q || airport.code.toLowerCase() === alt;
+  const isExactName = airport.name_en?.toLowerCase() === q || airport.name_ru?.toLowerCase() === q || airport.name_en?.toLowerCase() === alt || airport.name_ru?.toLowerCase() === alt;
+  const isExactCity = airport.city_en?.toLowerCase() === q || airport.city_ru?.toLowerCase() === q || airport.city_en?.toLowerCase() === alt || airport.city_ru?.toLowerCase() === alt;
+  
+  const isNameStarts = airport.name_en?.toLowerCase().startsWith(q) || airport.name_ru?.toLowerCase().startsWith(q) || airport.name_en?.toLowerCase().startsWith(alt) || airport.name_ru?.toLowerCase().startsWith(alt);
+  const isCityStarts = airport.city_en?.toLowerCase().startsWith(q) || airport.city_ru?.toLowerCase().startsWith(q) || airport.city_en?.toLowerCase().startsWith(alt) || airport.city_ru?.toLowerCase().startsWith(alt);
+  const isCodeStarts = airport.code.toLowerCase().startsWith(q) || airport.code.toLowerCase().startsWith(alt);
+
+  if (isExactCode) s += 10000;
+  else if (isExactName) s += 5000;
+  else if (isExactCity) s += 4000;
+  else if (isNameStarts) s += 3000;
+  else if (isCityStarts) s += 2000;
+  else if (isCodeStarts) s += 1000;
+
+  const target = `${airport.code} ${airport.name_ru} ${airport.name_en} ${airport.city_ru} ${airport.city_en}`.toLowerCase();
+  if (target.includes(q) || target.includes(alt)) {
+    s += 100;
+  }
+
+  // Hub heuristic: If the airport name exactly matches its city name, it's a major hub/city pseudo-code
+  if ((airport.name_en && airport.city_en && airport.name_en === airport.city_en) || 
+      (airport.name_ru && airport.city_ru && airport.name_ru === airport.city_ru)) {
+    s += 500;
+  }
+
+  return s;
+}
+
 function CityAutocomplete({ 
   value, 
   onChange, 
@@ -69,33 +104,7 @@ function CityAutocomplete({
     const target = `${a.code} ${a.name_ru} ${a.name_en} ${a.city_ru} ${a.city_en}`.toLowerCase();
     return target.includes(query) || target.includes(altQuery);
   }).sort((a, b) => {
-    // Priority: exact code match > city exact > city starts with > name starts with > contains
-    const score = (airport: Airport) => {
-      const q = query;
-      const alt = altQuery;
-      let s = 0;
-      
-      const isExactCode = airport.code.toLowerCase() === q || airport.code.toLowerCase() === alt;
-      const isExactCity = airport.city_en?.toLowerCase() === q || airport.city_ru?.toLowerCase() === q || airport.city_en?.toLowerCase() === alt || airport.city_ru?.toLowerCase() === alt;
-      const isExactName = airport.name_en?.toLowerCase() === q || airport.name_ru?.toLowerCase() === q || airport.name_en?.toLowerCase() === alt || airport.name_ru?.toLowerCase() === alt;
-      const isCityStarts = airport.city_en?.toLowerCase().startsWith(q) || airport.city_ru?.toLowerCase().startsWith(q) || airport.city_en?.toLowerCase().startsWith(alt) || airport.city_ru?.toLowerCase().startsWith(alt);
-      const isNameStarts = airport.name_en?.toLowerCase().startsWith(q) || airport.name_ru?.toLowerCase().startsWith(q) || airport.name_en?.toLowerCase().startsWith(alt) || airport.name_ru?.toLowerCase().startsWith(alt);
-      const isCodeStarts = airport.code.toLowerCase().startsWith(q) || airport.code.toLowerCase().startsWith(alt);
-
-      if (isExactCode) s += 1000;
-      else if (isExactCity) s += 900;
-      else if (isExactName) s += 800;
-      else if (isCityStarts) s += 500;
-      else if (isNameStarts) s += 400;
-      else if (isCodeStarts) s += 300;
-      else s += 10;
-      
-      const hubs = ['JFK', 'LHR', 'CDG', 'DXB', 'IST', 'SVO', 'VKO', 'DME', 'FRA', 'AMS', 'MAD', 'BCN', 'FCO', 'MXP', 'LIN', 'BGY', 'TGD', 'TIV', 'SOF', 'BEG', 'VIE', 'PRG', 'ATH', 'NYC', 'LON', 'PAR', 'MOW', 'MIL'];
-      if (hubs.includes(airport.code.toUpperCase())) s += 2000;
-      
-      return s;
-    };
-    return score(b) - score(a) || (a.city_en || '').localeCompare(b.city_en || '');
+    return scoreAirport(b, query, altQuery) - scoreAirport(a, query, altQuery) || (a.city_en || '').localeCompare(b.city_en || '');
   }).slice(0, 8);
 
   return (
@@ -246,56 +255,21 @@ export function SearchForm({
       if (!query) return '';
       const altQuery = switchLayout(query);
 
-      // 1. Fallback — known city overrides to prevent wrong matches (PRIORITY)
-      const knownOverrides: Record<string, string> = {
-        'rome': 'ROM', 'рим': 'ROM',
-        'paris': 'PAR', 'париж': 'PAR',
-        'london': 'LON', 'лондон': 'LON',
-        'new york': 'NYC', 'нью-йорк': 'NYC',
-        'dubai': 'DXB', 'дубай': 'DXB',
-        'istanbul': 'IST', 'стамбул': 'IST',
-        'barcelona': 'BCN', 'барселона': 'BCN',
-        'madrid': 'MAD', 'мадрид': 'MAD',
-        'milan': 'MIL', 'милан': 'MIL',
-        'amsterdam': 'AMS', 'амстердам': 'AMS',
-        'berlin': 'BER', 'берлин': 'BER',
-        'vienna': 'VIE', 'вена': 'VIE',
-        'prague': 'PRG', 'прага': 'PRG',
-        'athens': 'ATH', 'афины': 'ATH',
-        'sofia': 'SOF', 'софия': 'SOF',
-        'podgorica': 'TGD', 'подгорица': 'TGD',
-        'tivat': 'TIV', 'тиват': 'TIV',
-      };
-      for (const [cityName, code] of Object.entries(knownOverrides)) {
-        if (query.includes(cityName) || altQuery.includes(cityName)) {
-          return code;
+      let bestMatch: Airport | null = null;
+      let highestScore = 0;
+
+      for (const airport of AIRPORTS) {
+        const score = scoreAirport(airport, query, altQuery);
+        if (score > highestScore) {
+          highestScore = score;
+          bestMatch = airport;
         }
       }
 
-      // 2. Exact IATA code match (case-insensitive)
-      const exactCode = AIRPORTS.find(a => a.code.toLowerCase() === query);
-      if (exactCode) return exactCode.code;
-
-      // 3. Exact city name match (ru or en)
-      const exactCity = AIRPORTS.find(a =>
-        a.city_en?.toLowerCase() === query || a.city_ru?.toLowerCase() === query
-      );
-      if (exactCity) return exactCity.code;
-
-      // 4. City name startsWith
-      const startsWithCity = AIRPORTS.find(a =>
-        a.city_en?.toLowerCase().startsWith(query) || a.city_ru?.toLowerCase().startsWith(query)
-      );
-      if (startsWithCity) return startsWithCity.code;
-
-      // 5. Airport name startsWith (ru/en)
-      const startsWithName = AIRPORTS.find(a =>
-        a.name_en?.toLowerCase().startsWith(query) ||
-        a.name_ru?.toLowerCase().startsWith(query) ||
-        a.name_en?.toLowerCase().startsWith(altQuery) ||
-        a.name_ru?.toLowerCase().startsWith(altQuery)
-      );
-      if (startsWithName) return startsWithName.code;
+      if (bestMatch && highestScore > 0) {
+        console.log('===> RESOLVED DYNAMICALLY:', bestMatch.code, '| Score:', highestScore, '| for input:', input);
+        return bestMatch.code;
+      }
       // 6. Last resort: substring includes
       const fallback = AIRPORTS.find(a => {
         const target = `${a.code} ${a.name_ru} ${a.name_en} ${a.city_ru} ${a.city_en}`.toLowerCase();
