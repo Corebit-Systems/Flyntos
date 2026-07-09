@@ -23,11 +23,17 @@ export default async function ResultsPage({
 
   const originRaw = currentSearch.origin?.trim() || currentSearch.from?.trim() || '';
   const destinationRaw = currentSearch.destination?.trim() || currentSearch.to?.trim() || '';
-  const departDateRaw = currentSearch.departureDate?.trim() || currentSearch.depart?.trim() || '';
+  const departDateRaw = currentSearch.departDate?.trim() || currentSearch.departureDate?.trim() || currentSearch.depart?.trim() || '';
+  const returnDateRaw = currentSearch.returnDate?.trim() || '';
+  const adultsRaw = currentSearch.adults?.trim() || '1';
+  const childrenRaw = currentSearch.children?.trim() || '0';
 
   const safeOrigin = sanitize(originRaw).toUpperCase();
   const safeDestination = sanitize(destinationRaw).toUpperCase();
   const safeDepartDate = sanitize(departDateRaw);
+  const safeReturnDate = sanitize(returnDateRaw);
+  const adults = sanitize(adultsRaw);
+  const children = sanitize(childrenRaw);
 
   const dict = getDictionary(locale);
   const rpDict = dict.ui.resultsPage;
@@ -42,6 +48,21 @@ export default async function ResultsPage({
     return (locale as string) === 'ru' || (locale as string) === 'uk' || (locale as string) === 'be' || (locale as string) === 'kk' ? (airport.city_ru || airport.name_ru || code) : (airport.city_en || airport.name_en || code);
   };
   const destinationName = getCityName(safeDestination) || '...';
+  const originName = getCityName(safeOrigin) || '...';
+
+  const aviasalesUrl = (() => {
+    const params = new URLSearchParams({
+      origin_iata: safeOrigin,
+      destination_iata: safeDestination,
+      depart_date: safeDepartDate,
+      adults: adults,
+    });
+    if (safeReturnDate) params.set('return_date', safeReturnDate);
+    if (children && children !== '0') params.set('children', children);
+    
+    const searchUrl = `https://www.aviasales.com/search?${params.toString()}`;
+    return `https://tp.media/r?marker=547770&trs=547770&p=4114&campaign_id=100&u=${encodeURIComponent(searchUrl)}`;
+  })();
 
   return (
     <div className="min-h-screen pt-32 pb-16 px-4 relative flex flex-col items-center">
@@ -51,9 +72,15 @@ export default async function ResultsPage({
         <div>
           <h2 className="text-xl font-bold text-white mb-2">
             {hasRoute ? (
-              <>{rpDict.titleReady.replace('{origin}', safeOrigin).replace('{destination}', safeDestination)}</>
+              <div className="flex flex-col gap-1">
+                <span>{originName} → {destinationName}</span>
+                <span className="text-sm text-blue-400 font-normal">
+                  {safeDepartDate} {safeReturnDate ? ` — ${safeReturnDate}` : ''} | 
+                  Adults: {adults}{children && children !== '0' ? `, Children: ${children}` : ''}
+                </span>
+              </div>
             ) : safeOrigin ? (
-              <>{rpDict.titleFrom.replace('{origin}', safeOrigin)}{rpDict.titleDestination}</>
+              <>{rpDict.titleFrom.replace('{origin}', originName)}{rpDict.titleDestination}</>
             ) : (
               <>{rpDict.titleSpecify}</>
             )}
@@ -64,7 +91,7 @@ export default async function ResultsPage({
         </div>
         {hasRoute && (
           <Link
-            href={`${apiBase}/out/aviasales?from=${safeOrigin}&to=${safeDestination}&date=${safeDepartDate}`}
+            href={aviasalesUrl}
             target="_blank" rel="noopener noreferrer"
             className="shrink-0 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition-all text-center uppercase tracking-wider cursor-pointer shadow-lg shadow-blue-500/20"
           >

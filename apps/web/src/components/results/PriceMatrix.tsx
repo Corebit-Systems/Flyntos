@@ -97,7 +97,23 @@ export function PriceMatrix({ origin, destination, departDate }: { origin: strin
     }
     router.push(`${pathname}?${params.toString()}`);
 
-    window.open(`${apiBase}/out/aviasales?from=${origin}&to=${destination}&date=${newDate}`, '_blank');
+    const rDate = params.get('returnDate') || '';
+    const adults = params.get('adults') || '1';
+    const children = params.get('children') || '0';
+
+    const aviasalesParams = new URLSearchParams({
+      origin_iata: origin,
+      destination_iata: destination,
+      depart_date: newDate,
+      adults: adults,
+    });
+    if (rDate) aviasalesParams.set('return_date', rDate);
+    if (children && children !== '0') aviasalesParams.set('children', children);
+    
+    const searchUrl = `https://www.aviasales.com/search?${aviasalesParams.toString()}`;
+    const targetUrl = `https://tp.media/r?marker=547770&trs=547770&p=4114&campaign_id=100&u=${encodeURIComponent(searchUrl)}`;
+
+    window.open(targetUrl, '_blank');
   };
 
   const locale = pathname?.split('/')[1] || 'en';

@@ -168,6 +168,7 @@ export function SearchForm({
   const [departDate, setDepartDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
   const [adults, setAdults] = useState('1');
+  const [children, setChildren] = useState('0');
   const [selectedScenario, setSelectedScenario] = useState('standard');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -323,11 +324,12 @@ export function SearchForm({
       const params = new URLSearchParams({
         origin: finalFrom,
         destination: finalTo,
-        departureDate: departDate,
-        returnDate: returnDate,
-        adults: adults,
-        scenario: selectedScenario,
+        departDate: departDate,
       });
+      if (returnDate) params.set('returnDate', returnDate);
+      params.set('adults', adults);
+      params.set('children', children);
+      params.set('scenario', selectedScenario);
       router.push(`/${locale}/results?${params.toString()}`);
     }, 1500);
   };
@@ -454,17 +456,32 @@ export function SearchForm({
               </div>
 
               {/* Adults */}
-              <div className="flex flex-col flex-1 min-w-[100px]">
-                <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1 px-1">Travelers</label>
+              <div className="flex flex-col flex-1 min-w-[90px]">
+                <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1 px-1">Adults</label>
                 <select
                   className="w-full bg-neutral-950 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-semibold tracking-wide focus:outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/50 transition-all font-mono"
                   value={adults}
                   onChange={(e) => setAdults(e.target.value)}
                 >
-                  <option value="1">1 Adult</option>
-                  <option value="2">2 Adults</option>
-                  <option value="3">3 Adults</option>
-                  <option value="4">4 Adults</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                </select>
+              </div>
+
+              {/* Children */}
+              <div className="flex flex-col flex-1 min-w-[90px]">
+                <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1 px-1">Children</label>
+                <select
+                  className="w-full bg-neutral-950 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-semibold tracking-wide focus:outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/50 transition-all font-mono"
+                  value={children}
+                  onChange={(e) => setChildren(e.target.value)}
+                >
+                  <option value="0">0</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
                 </select>
               </div>
 
