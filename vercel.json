@@ -1,4 +1,4 @@
 {
-  "installCommand": "cd apps/web && npm install --legacy-peer-deps",
-  "buildCommand": "cd apps/web && npx next build"
+  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "npx next build"
 }
