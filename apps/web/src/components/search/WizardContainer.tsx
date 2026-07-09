@@ -28,7 +28,7 @@ export function WizardContainer({ locale, dict, proofItems, previewItems }: Wiza
       {/* Top Search Area */}
       <div className="w-full max-w-6xl mx-auto flex flex-col items-center z-10 mb-24">
         <h1 className="text-3xl md:text-5xl font-extrabold text-white text-center mb-8 drop-shadow-lg">
-          Находите более умные маршруты
+          {dict?.ui?.hero?.title || 'Find smarter routes'}
         </h1>
         <div className="w-full">
           <SearchForm locale={locale} labels={dict?.ui?.hero || { from: 'From', to: 'To', depart: 'Depart', return: 'Return', cta: 'Искать рейсы' }} />

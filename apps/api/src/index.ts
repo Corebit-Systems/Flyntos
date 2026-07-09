@@ -13,9 +13,7 @@ const env = envSchema.parse(process.env);
 const app = Fastify({ logger: true });
 await app.register(cors, {
   origin: [
-    'https://flyntos.com',
     /.*\.vercel\.app$/,
-    'http://localhost:3000',
     env.APP_BASE_URL
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
