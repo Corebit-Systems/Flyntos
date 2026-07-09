@@ -2,6 +2,9 @@
   "name": "flyntos",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "20.x"
+  },
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "dev": "pnpm -r --parallel --filter @flyntos/web --filter @flyntos/api --filter @flyntos/worker dev",
