@@ -16,15 +16,27 @@ const previewItems = [
 ];
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
-  const locale = getLocale((await params).locale);
-  const dict = getDictionary(locale);
+  try {
+    const locale = getLocale((await params).locale);
+    const dict = getDictionary(locale);
 
-  return (
-    <WizardContainer
-      locale={locale}
-      dict={dict}
-      proofItems={proofItems}
-      previewItems={previewItems}
-    />
-  );
+    return (
+      <WizardContainer
+        locale={locale}
+        dict={dict}
+        proofItems={proofItems}
+        previewItems={previewItems}
+      />
+    );
+  } catch (error) {
+    console.error("CRITICAL SSR ERROR ON HOME PAGE:", error);
+    return (
+      <div style={{ padding: '2rem', color: '#ff4d4d', background: '#1a1a1a', minHeight: '100vh', fontFamily: 'sans-serif' }}>
+        <h2>Ошибка сборки страницы:</h2>
+        <pre style={{ background: '#000', padding: '1rem', borderRadius: '8px', overflowX: 'auto', border: '1px solid #333' }}>
+          {error instanceof Error ? error.stack : String(error)}
+        </pre>
+      </div>
+    );
+  }
 }
