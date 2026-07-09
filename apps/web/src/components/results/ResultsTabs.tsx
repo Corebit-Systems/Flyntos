@@ -2,31 +2,24 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSearchParams, usePathname } from 'next/navigation';
-import airportsData from '../../data/airports.json';
 
 interface ResultsTabsProps {
   dict?: any;
+  destinationName?: string;
+  originCode?: string;
+  destinationCode?: string;
+  departDate?: string;
 }
 
-export function ResultsTabs({ dict }: ResultsTabsProps) {
+export function ResultsTabs({ 
+  dict, 
+  destinationName = '...', 
+  originCode = '', 
+  destinationCode = '', 
+  departDate = '' 
+}: ResultsTabsProps) {
   const [currentTab, setCurrentTab] = useState<'cars' | 'extras'>('cars');
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-
-  const originCode = (searchParams.get('origin') || searchParams.get('from') || '').toUpperCase();
-  const destinationCode = (searchParams.get('destination') || searchParams.get('to') || '').toUpperCase();
-  const departDate = searchParams.get('departureDate') || searchParams.get('depart') || searchParams.get('date') || '';
   const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/$/, '');
-
-  const locale = pathname?.split('/')[1] || 'en';
-  const getCityName = (code: string) => {
-    const airport = (airportsData as any[]).find((a) => a.code === code);
-    if (!airport) return code;
-    return locale === 'ru' || locale === 'uk' || locale === 'be' || locale === 'kk' ? (airport.city_ru || airport.name_ru || code) : (airport.city_en || airport.name_en || code);
-  };
-
-  const destinationName = getCityName(destinationCode) || '...';
 
   const rp = dict?.ui?.resultsPage || {
     carsTitle: 'Car Rental & Charter',

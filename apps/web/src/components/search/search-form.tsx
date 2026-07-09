@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWizard } from '../../hooks/useWizard';
 import { scenarios } from '@flyntos/config';
@@ -71,14 +71,24 @@ function CityAutocomplete({
       const q = query;
       const alt = altQuery;
       let s = 0;
-      if (airport.code.toLowerCase() === q || airport.code.toLowerCase() === alt) s = 100;
-      else if (airport.city_en?.toLowerCase() === q || airport.city_ru?.toLowerCase() === q || airport.city_en?.toLowerCase() === alt || airport.city_ru?.toLowerCase() === alt) s = 90;
-      else if (airport.city_en?.toLowerCase().startsWith(q) || airport.city_ru?.toLowerCase().startsWith(q) || airport.city_en?.toLowerCase().startsWith(alt) || airport.city_ru?.toLowerCase().startsWith(alt)) s = 70;
-      else if (airport.name_en?.toLowerCase().startsWith(q) || airport.name_ru?.toLowerCase().startsWith(q) || airport.name_en?.toLowerCase().startsWith(alt) || airport.name_ru?.toLowerCase().startsWith(alt)) s = 50;
-      else s = 10;
+      
+      const isExactCode = airport.code.toLowerCase() === q || airport.code.toLowerCase() === alt;
+      const isExactCity = airport.city_en?.toLowerCase() === q || airport.city_ru?.toLowerCase() === q || airport.city_en?.toLowerCase() === alt || airport.city_ru?.toLowerCase() === alt;
+      const isExactName = airport.name_en?.toLowerCase() === q || airport.name_ru?.toLowerCase() === q || airport.name_en?.toLowerCase() === alt || airport.name_ru?.toLowerCase() === alt;
+      const isCityStarts = airport.city_en?.toLowerCase().startsWith(q) || airport.city_ru?.toLowerCase().startsWith(q) || airport.city_en?.toLowerCase().startsWith(alt) || airport.city_ru?.toLowerCase().startsWith(alt);
+      const isNameStarts = airport.name_en?.toLowerCase().startsWith(q) || airport.name_ru?.toLowerCase().startsWith(q) || airport.name_en?.toLowerCase().startsWith(alt) || airport.name_ru?.toLowerCase().startsWith(alt);
+      const isCodeStarts = airport.code.toLowerCase().startsWith(q) || airport.code.toLowerCase().startsWith(alt);
+
+      if (isExactCode) s += 1000;
+      else if (isExactCity) s += 900;
+      else if (isExactName) s += 800;
+      else if (isCityStarts) s += 500;
+      else if (isNameStarts) s += 400;
+      else if (isCodeStarts) s += 300;
+      else s += 10;
       
       const hubs = ['JFK', 'LHR', 'CDG', 'DXB', 'IST', 'SVO', 'VKO', 'DME', 'FRA', 'AMS', 'MAD', 'BCN', 'FCO', 'MXP', 'LIN', 'BGY', 'TGD', 'TIV', 'SOF', 'BEG', 'VIE', 'PRG', 'ATH', 'NYC', 'LON', 'PAR', 'MOW', 'MIL'];
-      if (hubs.includes(airport.code.toUpperCase())) s += 15;
+      if (hubs.includes(airport.code.toUpperCase())) s += 2000;
       
       return s;
     };
@@ -160,6 +170,32 @@ export function SearchForm({
   const [adults, setAdults] = useState('1');
   const [selectedScenario, setSelectedScenario] = useState('standard');
   const [isLoading, setIsLoading] = useState(false);
+
+  const [departFocused, setDepartFocused] = useState(false);
+  const [returnFocused, setReturnFocused] = useState(false);
+
+  const datePattern = useMemo(() => {
+    try {
+      const parts = new Intl.DateTimeFormat(locale).formatToParts(new Date(2000, 11, 31));
+      return parts.map(p => {
+        if (p.type === 'day') return 'DD';
+        if (p.type === 'month') return 'MM';
+        if (p.type === 'year') return 'YYYY';
+        return p.value;
+      }).join('');
+    } catch {
+      return 'DD.MM.YYYY';
+    }
+  }, [locale]);
+
+  const formatDate = useCallback((dateStr: string) => {
+    if (!dateStr) return '';
+    try {
+      return new Intl.DateTimeFormat(locale).format(new Date(dateStr));
+    } catch {
+      return dateStr;
+    }
+  }, [locale]);
 
   useEffect(() => {
     async function detectLocation() {
@@ -393,8 +429,11 @@ export function SearchForm({
                 <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1 px-1">{labels?.depart || 'Depart'}</label>
                 <input
                   className="w-full bg-neutral-950 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-semibold tracking-wide focus:outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/50 transition-all font-mono"
-                  type="date"
-                  value={departDate}
+                  type={departFocused ? "date" : "text"}
+                  onFocus={() => setDepartFocused(true)}
+                  onBlur={() => setDepartFocused(false)}
+                  value={departFocused ? departDate : formatDate(departDate)}
+                  placeholder={datePattern}
                   onChange={(e) => setDepartDate(e.target.value)}
                   required
                 />
@@ -405,8 +444,11 @@ export function SearchForm({
                 <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider mb-1 px-1">{labels?.return || 'Return'}</label>
                 <input
                   className="w-full bg-neutral-950 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-semibold tracking-wide focus:outline-none focus:border-blue-500/80 focus:ring-1 focus:ring-blue-500/50 transition-all font-mono"
-                  type="date"
-                  value={returnDate}
+                  type={returnFocused ? "date" : "text"}
+                  onFocus={() => setReturnFocused(true)}
+                  onBlur={() => setReturnFocused(false)}
+                  value={returnFocused ? returnDate : formatDate(returnDate)}
+                  placeholder={datePattern}
                   onChange={(e) => setReturnDate(e.target.value)}
                 />
               </div>

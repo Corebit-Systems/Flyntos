@@ -3,6 +3,7 @@ import { getLocale } from '../../../lib/get-locale';
 import { PriceMatrix } from '../../../components/results/PriceMatrix';
 import { ResultsTabs } from '../../../components/results/ResultsTabs';
 import Link from 'next/link';
+import airportsData from '../../../data/airports.json';
 
 // Simple XSS sanitization (Next.js automatically escapes in JSX, but this is a requested explicit sanitization)
 const sanitize = (str: string | undefined | null) => {
@@ -34,6 +35,13 @@ export default async function ResultsPage({
   const hasRoute = safeOrigin.length >= 3 && safeDestination.length >= 3;
 
   const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/$/, '');
+
+  const getCityName = (code: string) => {
+    const airport = (airportsData as any[]).find((a) => a.code === code);
+    if (!airport) return code;
+    return (locale as string) === 'ru' || (locale as string) === 'uk' || (locale as string) === 'be' || (locale as string) === 'kk' ? (airport.city_ru || airport.name_ru || code) : (airport.city_en || airport.name_en || code);
+  };
+  const destinationName = getCityName(safeDestination) || '...';
 
   return (
     <div className="min-h-screen pt-32 pb-16 px-4 relative flex flex-col items-center">
@@ -87,7 +95,7 @@ export default async function ResultsPage({
       ) : (
         <>
           <PriceMatrix origin={safeOrigin} destination={safeDestination} departDate={safeDepartDate} />
-          <ResultsTabs dict={dict} />
+          <ResultsTabs dict={dict} destinationName={destinationName} originCode={safeOrigin} destinationCode={safeDestination} departDate={safeDepartDate} />
         </>
       )}
     </div>
