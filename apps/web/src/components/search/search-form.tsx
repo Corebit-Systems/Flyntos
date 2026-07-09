@@ -66,16 +66,23 @@ function CityAutocomplete({
     const target = `${a.code} ${a.name_ru} ${a.name_en} ${a.city_ru} ${a.city_en}`.toLowerCase();
     return target.includes(query) || target.includes(altQuery);
   }).sort((a, b) => {
-    // Priority: exact code match > city starts with > name starts with > contains
+    // Priority: exact code match > city exact > city starts with > name starts with > contains
     const score = (airport: Airport) => {
       const q = query;
-      if (airport.code.toLowerCase() === q) return 100;
-      if (airport.city_en?.toLowerCase() === q || airport.city_ru?.toLowerCase() === q) return 90;
-      if (airport.city_en?.toLowerCase().startsWith(q) || airport.city_ru?.toLowerCase().startsWith(q)) return 70;
-      if (airport.name_en?.toLowerCase().startsWith(q) || airport.name_ru?.toLowerCase().startsWith(q)) return 50;
-      return 10;
+      const alt = altQuery;
+      let s = 0;
+      if (airport.code.toLowerCase() === q || airport.code.toLowerCase() === alt) s = 100;
+      else if (airport.city_en?.toLowerCase() === q || airport.city_ru?.toLowerCase() === q || airport.city_en?.toLowerCase() === alt || airport.city_ru?.toLowerCase() === alt) s = 90;
+      else if (airport.city_en?.toLowerCase().startsWith(q) || airport.city_ru?.toLowerCase().startsWith(q) || airport.city_en?.toLowerCase().startsWith(alt) || airport.city_ru?.toLowerCase().startsWith(alt)) s = 70;
+      else if (airport.name_en?.toLowerCase().startsWith(q) || airport.name_ru?.toLowerCase().startsWith(q) || airport.name_en?.toLowerCase().startsWith(alt) || airport.name_ru?.toLowerCase().startsWith(alt)) s = 50;
+      else s = 10;
+      
+      const hubs = ['JFK', 'LHR', 'CDG', 'DXB', 'IST', 'SVO', 'VKO', 'DME', 'FRA', 'AMS', 'MAD', 'BCN', 'FCO', 'MXP', 'LIN', 'BGY', 'TGD', 'TIV', 'SOF', 'BEG', 'VIE', 'PRG', 'ATH', 'NYC', 'LON', 'PAR', 'MOW', 'MIL'];
+      if (hubs.includes(airport.code.toUpperCase())) s += 15;
+      
+      return s;
     };
-    return score(b) - score(a);
+    return score(b) - score(a) || (a.city_en || '').localeCompare(b.city_en || '');
   }).slice(0, 8);
 
   return (

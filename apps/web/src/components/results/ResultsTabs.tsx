@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, usePathname } from 'next/navigation';
+import airportsData from '../../data/airports.json';
 
 interface ResultsTabsProps {
   dict?: any;
@@ -11,11 +12,21 @@ interface ResultsTabsProps {
 export function ResultsTabs({ dict }: ResultsTabsProps) {
   const [currentTab, setCurrentTab] = useState<'cars' | 'extras'>('cars');
   const searchParams = useSearchParams();
+  const pathname = usePathname();
 
-  const originCity = (searchParams.get('origin') || searchParams.get('from') || '').toUpperCase();
-  const destinationCity = (searchParams.get('destination') || searchParams.get('to') || '').toUpperCase();
+  const originCode = (searchParams.get('origin') || searchParams.get('from') || '').toUpperCase();
+  const destinationCode = (searchParams.get('destination') || searchParams.get('to') || '').toUpperCase();
   const departDate = searchParams.get('departureDate') || searchParams.get('depart') || searchParams.get('date') || '';
   const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/$/, '');
+
+  const locale = pathname?.split('/')[1] || 'en';
+  const getCityName = (code: string) => {
+    const airport = (airportsData as any[]).find((a) => a.code === code);
+    if (!airport) return code;
+    return locale === 'ru' || locale === 'uk' || locale === 'be' || locale === 'kk' ? (airport.city_ru || airport.name_ru || code) : (airport.city_en || airport.name_en || code);
+  };
+
+  const destinationName = getCityName(destinationCode) || '...';
 
   const rp = dict?.ui?.resultsPage || {
     carsTitle: 'Car Rental & Charter',
@@ -104,7 +115,7 @@ export function ResultsTabs({ dict }: ResultsTabsProps) {
                   {rp.airportTransport.includes('{city}') ? (
                     <>
                       {rp.airportTransport.split('{city}')[0]}
-                      <span className="text-blue-400">{destinationCity || '...'}</span>
+                      <span className="text-blue-400">{destinationName}</span>
                       {rp.airportTransport.split('{city}')[1]}
                     </>
                   ) : (
@@ -128,8 +139,8 @@ export function ResultsTabs({ dict }: ResultsTabsProps) {
                     <p className="text-xs text-neutral-400 mb-4 line-clamp-3">{rp.cars.optimalDesc}</p>
                     <div className="text-xl font-bold text-emerald-400 mb-6">{rp.cars.optimalPrice}</div>
                   </div>
-                  <a href={`${apiBase}/out/autoeurope?from=${originCity}&to=${destinationCity}&date=${departDate}`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
-                    {rp.cars.optimalBtn.replace('{city}', destinationCity)}
+                  <a href={`${apiBase}/out/autoeurope?from=${originCode}&to=${destinationCode}&date=${departDate}`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
+                    {rp.cars.optimalBtn.replace('{city}', destinationName)}
                   </a>
                 </div>
 
@@ -145,8 +156,8 @@ export function ResultsTabs({ dict }: ResultsTabsProps) {
                     <p className="text-xs text-neutral-400 mb-4 line-clamp-3">{rp.cars.budgetDesc}</p>
                     <div className="text-xl font-bold text-emerald-400 mb-6">{rp.cars.budgetPrice}</div>
                   </div>
-                  <a href={`${apiBase}/out/autoeurope?from=${originCity}&to=${destinationCity}&date=${departDate}`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
-                    {rp.cars.budgetBtn.replace('{city}', destinationCity)}
+                  <a href={`${apiBase}/out/autoeurope?from=${originCode}&to=${destinationCode}&date=${departDate}`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
+                    {rp.cars.budgetBtn.replace('{city}', destinationName)}
                   </a>
                 </div>
 
@@ -162,8 +173,8 @@ export function ResultsTabs({ dict }: ResultsTabsProps) {
                     <p className="text-xs text-neutral-400 mb-4 line-clamp-3">{rp.cars.yachtDesc}</p>
                     <div className="text-xl font-bold text-emerald-400 mb-6">{rp.cars.yachtPrice}</div>
                   </div>
-                  <a href={`${apiBase}/out/searadar?from=${originCity}&to=${destinationCity}&date=${departDate}`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
-                    {rp.cars.yachtBtn.replace('{city}', destinationCity)}
+                  <a href={`${apiBase}/out/searadar?from=${originCode}&to=${destinationCode}&date=${departDate}`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
+                    {rp.cars.yachtBtn.replace('{city}', destinationName)}
                   </a>
                 </div>
 

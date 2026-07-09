@@ -100,7 +100,8 @@ export function PriceMatrix({ origin, destination, departDate }: { origin: strin
     window.open(`${apiBase}/out/aviasales?from=${origin}&to=${destination}&date=${newDate}`, '_blank');
   };
 
-  const formatter = new Intl.DateTimeFormat('ru-RU', { weekday: 'short', day: 'numeric', month: 'short' });
+  const locale = pathname?.split('/')[1] || 'en';
+  const formatter = new Intl.DateTimeFormat(locale, { weekday: 'short', day: 'numeric', month: 'short' });
 
   return (
     <div className="w-full max-w-5xl mx-auto mb-12 z-10 relative min-h-[100px]">
