@@ -1,3 +1,4 @@
+// Main entrypoint for localized routing rendering the Wizard search interface
 import { getDictionary } from '@flyntos/i18n';
 import { getLocale } from '../../lib/get-locale';
 import { WizardContainer } from '../../components/search/WizardContainer';
