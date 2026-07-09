@@ -5,6 +5,6 @@
   "type": "module",
   "main": "src/index.ts",
   "types": "src/index.ts",
-  "dependencies": { "@flyntos/config": "workspace:*", "@flyntos/shared": "workspace:*" },
+  "dependencies": { "@flyntos/config": "file:../config", "@flyntos/shared": "file:../shared" },
   "scripts": { "build": "tsc -p tsconfig.json", "lint": "tsc -p tsconfig.json --noEmit", "typecheck": "tsc -p tsconfig.json --noEmit" }
 }
