@@ -31,20 +31,30 @@ function scoreAirport(airport: Airport, query: string, altQuery: string): number
   if (!q) return 0;
 
   let s = 0;
-  const isExactCode = airport.code.toLowerCase() === q || airport.code.toLowerCase() === alt;
+  
   const isExactName = airport.name_en?.toLowerCase() === q || airport.name_ru?.toLowerCase() === q || airport.name_en?.toLowerCase() === alt || airport.name_ru?.toLowerCase() === alt;
   const isExactCity = airport.city_en?.toLowerCase() === q || airport.city_ru?.toLowerCase() === q || airport.city_en?.toLowerCase() === alt || airport.city_ru?.toLowerCase() === alt;
-  
+  const isExactCode = airport.code.toLowerCase() === q || airport.code.toLowerCase() === alt;
+
   const isNameStarts = airport.name_en?.toLowerCase().startsWith(q) || airport.name_ru?.toLowerCase().startsWith(q) || airport.name_en?.toLowerCase().startsWith(alt) || airport.name_ru?.toLowerCase().startsWith(alt);
   const isCityStarts = airport.city_en?.toLowerCase().startsWith(q) || airport.city_ru?.toLowerCase().startsWith(q) || airport.city_en?.toLowerCase().startsWith(alt) || airport.city_ru?.toLowerCase().startsWith(alt);
   const isCodeStarts = airport.code.toLowerCase().startsWith(q) || airport.code.toLowerCase().startsWith(alt);
 
-  if (isExactCode) s += 10000;
-  else if (isExactName) s += 5000;
-  else if (isExactCity) s += 4000;
-  else if (isNameStarts) s += 3000;
-  else if (isCityStarts) s += 2000;
-  else if (isCodeStarts) s += 1000;
+  // 1. Exact Name/City Match is KING (+100000). Ensures "Милан" matches Milan name perfectly.
+  if (isExactName) s += 100000;
+  if (isExactCity) s += 90000;
+  
+  // 2. StartsWith Name/City is highly important for typing long names (+50000).
+  if (isNameStarts) s += 50000;
+  if (isCityStarts) s += 40000;
+  
+  // 3. Exact Code (+30000). 
+  // It is placed lower than Name StartsWith so that "Мил" (Starts with Name for Milan/Milwaukee = 50000) 
+  // beats "МИЛ" (Exact Code for Манилы = 30000). But if they type "JFK" (no name match), JFK still dominates.
+  if (isExactCode) s += 30000;
+  
+  // 4. Code StartsWith
+  if (isCodeStarts) s += 5000;
 
   const target = `${airport.code} ${airport.name_ru} ${airport.name_en} ${airport.city_ru} ${airport.city_en}`.toLowerCase();
   if (target.includes(q) || target.includes(alt)) {
@@ -55,6 +65,12 @@ function scoreAirport(airport: Airport, query: string, altQuery: string): number
   if ((airport.name_en && airport.city_en && airport.name_en === airport.city_en) || 
       (airport.name_ru && airport.city_ru && airport.name_ru === airport.city_ru)) {
     s += 500;
+  }
+  
+  // Top Popular International Hubs Boost
+  const MAJOR_HUBS = ['LON','NYC','PAR','MIL','MOW','DXB','IST','BKK','TOK','TYO','SEL','SVO','VKO','DME','LHR','CDG','JFK','LAX','AMS','FRA','MAD','BCN','FCO','MXP','LIN','BGY','TGD','TIV','SOF','BEG','VIE','PRG','ATH','SIN','HKG','KUL'];
+  if (MAJOR_HUBS.includes(airport.code.toUpperCase())) {
+    s += 1000;
   }
 
   return s;
