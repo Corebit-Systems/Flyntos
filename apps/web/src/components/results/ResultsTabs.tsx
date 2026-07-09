@@ -11,6 +11,7 @@ export function ResultsTabs() {
   const originCity = (searchParams.get('origin') || searchParams.get('from') || '').toUpperCase();
   const destinationCity = (searchParams.get('destination') || searchParams.get('to') || '').toUpperCase();
   const departDate = searchParams.get('departureDate') || searchParams.get('depart') || searchParams.get('date') || '';
+  const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/$/, '');
 
   return (
     <div className="w-full max-w-5xl flex flex-col gap-6 relative z-10">
@@ -80,7 +81,7 @@ export function ResultsTabs() {
                     <p className="text-xs text-neutral-400 mb-4 line-clamp-3">Оптимальный выбор для комфортных поездок по побережью и горным серпантинам.</p>
                     <div className="text-xl font-bold text-emerald-400 mb-6">от 35 € <span className="text-xs text-neutral-500 font-normal">/ день</span></div>
                   </div>
-                  <a href={`http://localhost:4000/out/autoeurope?from=${originCity}&to=${destinationCity}&date=${departDate}`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
+                  <a href={`${apiBase}/out/autoeurope?from=${originCity}&to=${destinationCity}&date=${departDate}`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
                     Аренда авто в {destinationCity}
                   </a>
                 </div>
@@ -97,7 +98,7 @@ export function ResultsTabs() {
                     <p className="text-xs text-neutral-400 mb-4 line-clamp-3">Идеально для узких улочек старых городов и легкой парковки.</p>
                     <div className="text-xl font-bold text-emerald-400 mb-6">от 18 € <span className="text-xs text-neutral-500 font-normal">/ день</span></div>
                   </div>
-                  <a href={`http://localhost:4000/out/autoeurope?from=${originCity}&to=${destinationCity}&date=${departDate}`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
+                  <a href={`${apiBase}/out/autoeurope?from=${originCity}&to=${destinationCity}&date=${departDate}`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
                     Аренда авто в {destinationCity}
                   </a>
                 </div>
@@ -114,7 +115,7 @@ export function ResultsTabs() {
                     <p className="text-xs text-neutral-400 mb-4 line-clamp-3">Премиальный чартер. Доступно с капитаном или без — мировые марины.</p>
                     <div className="text-xl font-bold text-emerald-400 mb-6">от 250 € <span className="text-xs text-neutral-500 font-normal">/ день</span></div>
                   </div>
-                  <a href={`http://localhost:4000/out/searadar?from=${originCity}&to=${destinationCity}&date=${departDate}`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
+                  <a href={`${apiBase}/out/searadar?from=${originCity}&to=${destinationCity}&date=${departDate}`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
                     Чартер из {destinationCity}
                   </a>
                 </div>
@@ -142,7 +143,7 @@ export function ResultsTabs() {
                       Трансферы встречающий с табличкой из аэропортов и вокзалов по всему миру.
                     </p>
                   </div>
-                  <a href="http://localhost:4000/out/kiwitaxi" target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
+                  <a href={`${apiBase}/out/kiwitaxi`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
                     KiwiTaxi
                   </a>
                 </div>
@@ -155,7 +156,7 @@ export function ResultsTabs() {
                       Билеты на достопримечательности и туры по всему миру.
                     </p>
                   </div>
-                  <a href="http://localhost:4000/out/klook" target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
+                  <a href={`${apiBase}/out/klook`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
                     Klook
                   </a>
                 </div>
@@ -168,7 +169,7 @@ export function ResultsTabs() {
                       Подключение к сети за 1 минуту без физических SIM-карт.
                     </p>
                   </div>
-                  <a href="http://localhost:4000/out/saily" target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
+                  <a href={`${apiBase}/out/saily`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
                     Saily
                   </a>
                 </div>
@@ -181,7 +182,7 @@ export function ResultsTabs() {
                       Верните до 600 € за задержанный или отмененный рейс.
                     </p>
                   </div>
-                  <a href="http://localhost:4000/out/compensair" target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
+                  <a href={`${apiBase}/out/compensair`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
                     Compensair
                   </a>
                 </div>

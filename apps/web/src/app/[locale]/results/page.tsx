@@ -30,6 +30,8 @@ export default async function ResultsPage({
 
   const hasRoute = safeOrigin.length >= 3 && safeDestination.length >= 3;
 
+  const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/$/, '');
+
   return (
     <div className="min-h-screen pt-32 pb-16 px-4 relative flex flex-col items-center">
 
@@ -51,7 +53,7 @@ export default async function ResultsPage({
         </div>
         {hasRoute && (
           <Link
-            href={`http://localhost:4000/out/aviasales?from=${safeOrigin}&to=${safeDestination}&date=${safeDepartDate}`}
+            href={`${apiBase}/out/aviasales?from=${safeOrigin}&to=${safeDestination}&date=${safeDepartDate}`}
             target="_blank" rel="noopener noreferrer"
             className="shrink-0 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition-all text-center uppercase tracking-wider cursor-pointer shadow-lg shadow-blue-500/20"
           >

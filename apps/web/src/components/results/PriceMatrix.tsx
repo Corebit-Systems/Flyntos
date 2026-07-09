@@ -42,6 +42,8 @@ export function PriceMatrix({ origin, destination, departDate }: { origin: strin
   const isUsd = origin.toUpperCase() === 'MOW' || destination.toUpperCase() === 'MOW';
   const currencySymbol = isUsd ? '$' : '€';
 
+  const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/$/, '');
+
   useEffect(() => {
     if (!origin || !destination || origin.length < 3 || destination.length < 3) {
       setIsLoading(false);
@@ -57,7 +59,7 @@ export function PriceMatrix({ origin, destination, departDate }: { origin: strin
       ...(departDate ? { depart_date: departDate } : {})
     });
 
-    fetch(`http://localhost:4000/api/prices?${params.toString()}`)
+    fetch(`${apiBase}/api/prices?${params.toString()}`)
       .then(res => res.json())
       .then((json: { data: Array<{ date: string; price: number | null }> }) => {
         if (!isMounted) return;
@@ -80,7 +82,7 @@ export function PriceMatrix({ origin, destination, departDate }: { origin: strin
       .finally(() => { if (isMounted) setIsLoading(false); });
 
     return () => { isMounted = false; };
-  }, [origin, destination, departDate, baseDays]);
+  }, [origin, destination, departDate, baseDays, apiBase]);
 
   const validPrices = days.map(d => d.price).filter((p): p is number => p !== null);
   const minPrice = validPrices.length > 0 ? Math.min(...validPrices) : -1;
@@ -95,7 +97,7 @@ export function PriceMatrix({ origin, destination, departDate }: { origin: strin
     }
     router.push(`${pathname}?${params.toString()}`);
 
-    window.open(`http://localhost:4000/out/aviasales?from=${origin}&to=${destination}&date=${newDate}`, '_blank');
+    window.open(`${apiBase}/out/aviasales?from=${origin}&to=${destination}&date=${newDate}`, '_blank');
   };
 
   const formatter = new Intl.DateTimeFormat('ru-RU', { weekday: 'short', day: 'numeric', month: 'short' });

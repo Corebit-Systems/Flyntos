@@ -16,7 +16,8 @@ export function WizardContainer({ locale, dict, proofItems, previewItems }: Wiza
   useEffect(() => {
     // Silent warm-up ping for the backend
     try {
-      fetch('http://localhost:4000/health').catch(() => {});
+      const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/$/, '');
+      fetch(`${apiBase}/health`).catch(() => {});
     } catch (e) {
       // Ignored intentionally
     }
