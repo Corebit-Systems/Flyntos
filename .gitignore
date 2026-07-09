@@ -7,8 +7,10 @@ coverage
 *.log
 .env
 .env.local
+.env.prodaction
+.env.production
+*.env*
 pnpm-lock.yaml
 
 
 .vercel
-.env*
