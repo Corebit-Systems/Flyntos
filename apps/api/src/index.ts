@@ -29,4 +29,4 @@ await app.register(redirectRoutes);
 await app.register(pricesRoutes);
 await app.register(partnersRoutes);
 app.setErrorHandler((error, _request, reply) => reply.code(400).send({ message: 'Request failed safely', detail: error instanceof Error ? error.message : 'Unknown error' }));
-app.listen({ port: env.API_PORT, host: '0.0.0.0' }).then(() => app.log.info('Flyntos API listening on ' + env.API_PORT));
+app.listen({ port: env.PORT, host: '0.0.0.0' }).then(() => app.log.info('Flyntos API listening on ' + env.PORT));
