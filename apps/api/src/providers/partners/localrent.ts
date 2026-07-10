@@ -6,9 +6,13 @@ export class LocalrentAdapter extends BasePartnerAdapter {
     const params = new URLSearchParams();
     const locationCode = context.destinationIata === 'TIV' ? 'tivat' : 'podgorica';
     params.set('city', locationCode);
-    params.set('date_from', context.departureDate);
+    
+    // Ensure strict YYYY-MM-DD formatting, replacing any spaces or slashes
+    const formatDate = (d: string) => d.replace(/[\s/.]/g, '-');
+    
+    params.set('date_from', formatDate(context.departureDate));
     if (context.returnDate) {
-      params.set('date_to', context.returnDate);
+      params.set('date_to', formatDate(context.returnDate));
     }
     params.set('subid', subId);
     

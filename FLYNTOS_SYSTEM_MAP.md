@@ -44,6 +44,7 @@ Currently, the following partners are integrated into the monetization engine:
    - **Mechanism**: Converts standard YYYY-MM-DD dates to Aviasales' `DDMM` format. Wraps the destination search string in a `tp.media` redirect link using our official `marker` and `sub_id`.
 3. **Localrent (Car Rentals)**
    - **Mechanism**: Generates targeted car rental links exclusively when the destination is Montenegro (TGD or TIV). Uses `subid` for tracking.
+   - **Parameter Rules**: City must be passed as `city=tivat` or `city=podgorica`. Dates must be strictly formatted as `YYYY-MM-DD` (without spaces) for `date_from` and `date_to`.
 4. **KiwiTaxi (Transfers)**
    - **Mechanism**: Generates a referral link for an individual transfer from the arrival airport (`destinationIata`) to popular destinations around it or to a general booking page, passing our `subId` via the `pap` parameter. Supports localized landing pages.
 5. **GetYourGuide (Experiences & Tours)**
