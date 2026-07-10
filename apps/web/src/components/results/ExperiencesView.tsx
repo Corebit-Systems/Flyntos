@@ -38,7 +38,7 @@ export function ExperiencesView({
   const rp = dict?.ui?.resultsPage || {
     extras: {
       transferBtn: 'Book Transfer',
-      excursionsBtn: 'View Experience'
+      excursionsBtn: 'Explore Activities'
     }
   };
 
@@ -84,7 +84,7 @@ export function ExperiencesView({
     return (
       <div className="w-full py-16 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl flex flex-col items-center justify-center shadow-xl text-center px-4">
         <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="text-neutral-400 text-sm">Searching for transfers and experiences...</p>
+        <p className="text-neutral-400 text-sm">Loading Premium Extras...</p>
       </div>
     );
   }
@@ -93,24 +93,27 @@ export function ExperiencesView({
   const experienceLinks = links.filter(l => l.serviceType === 'experience');
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       {/* Transfers */}
       {transferLinks.map((link, idx) => (
-        <div key={link.id || `transfer-${idx}`} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl min-h-[300px] group">
-          <div>
+        <div key={link.id || `transfer-${idx}`} className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 flex flex-col justify-between hover:border-emerald-500/50 transition-all shadow-2xl min-h-[350px] group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          
+          <div className="relative z-10">
             <div 
-              className="w-full h-32 bg-cover bg-center rounded-xl mb-4 group-hover:scale-[1.02] transition-transform duration-500" 
+              className="w-full h-48 bg-cover bg-center rounded-2xl mb-6 group-hover:scale-[1.03] transition-transform duration-700 shadow-lg" 
               style={{ backgroundImage: `url('${link.imageUrl}')` }}
             />
-            <h4 className="text-lg font-bold text-white mb-2">{link.title}</h4>
-            <p className="text-sm text-neutral-400 leading-relaxed mb-2 line-clamp-2">
+            <div className="flex items-center gap-3 mb-3">
+              {link.logoUrl && <img src={link.logoUrl} alt={link.partnerName} className="h-6 object-contain" />}
+              <h4 className="text-2xl font-bold text-white">{link.title}</h4>
+            </div>
+            <p className="text-base text-neutral-300 leading-relaxed mb-6">
               {link.description}
             </p>
-            <div className="text-xl font-bold text-emerald-400 mb-6">
-              from {link.price} {link.currency}
-            </div>
           </div>
-          <a href={link.deeplink} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
+          
+          <a href={link.deeplink} target="_blank" rel="noopener noreferrer" className="relative z-10 w-full py-4 bg-gradient-to-r from-emerald-600 to-emerald-400 hover:from-emerald-500 hover:to-emerald-300 text-white font-bold text-sm uppercase tracking-widest rounded-xl transition-all shadow-lg hover:shadow-emerald-500/40 active:scale-[0.98] cursor-pointer text-center block">
             {rp.extras.transferBtn}
           </a>
         </div>
@@ -118,28 +121,31 @@ export function ExperiencesView({
 
       {/* Experiences */}
       {experienceLinks.map((link, idx) => (
-        <div key={link.id || `exp-${idx}`} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl min-h-[300px] group">
-          <div>
+        <div key={link.id || `exp-${idx}`} className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 flex flex-col justify-between hover:border-purple-500/50 transition-all shadow-2xl min-h-[350px] group relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          
+          <div className="relative z-10">
             <div 
-              className="w-full h-32 bg-cover bg-center rounded-xl mb-4 group-hover:scale-[1.02] transition-transform duration-500" 
+              className="w-full h-48 bg-cover bg-center rounded-2xl mb-6 group-hover:scale-[1.03] transition-transform duration-700 shadow-lg" 
               style={{ backgroundImage: `url('${link.imageUrl}')` }}
             />
-            <h4 className="text-lg font-bold text-white mb-2">{link.title}</h4>
-            <p className="text-sm text-neutral-400 leading-relaxed mb-2 line-clamp-2">
+            <div className="flex items-center gap-3 mb-3">
+              {link.logoUrl && <img src={link.logoUrl} alt={link.partnerName} className="h-6 object-contain" />}
+              <h4 className="text-2xl font-bold text-white">{link.title}</h4>
+            </div>
+            <p className="text-base text-neutral-300 leading-relaxed mb-6">
               {link.description}
             </p>
-            <div className="text-xl font-bold text-emerald-400 mb-6">
-              from {link.price} {link.currency}
-            </div>
           </div>
-          <a href={link.deeplink} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
+
+          <a href={link.deeplink} target="_blank" rel="noopener noreferrer" className="relative z-10 w-full py-4 bg-gradient-to-r from-purple-600 to-purple-400 hover:from-purple-500 hover:to-purple-300 text-white font-bold text-sm uppercase tracking-widest rounded-xl transition-all shadow-lg hover:shadow-purple-500/40 active:scale-[0.98] cursor-pointer text-center block">
             {rp.extras.excursionsBtn}
           </a>
         </div>
       ))}
 
       {links.length === 0 && (
-        <div className="col-span-1 md:col-span-2 lg:col-span-3 py-16 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl flex flex-col items-center justify-center shadow-xl text-center px-4">
+        <div className="col-span-1 md:col-span-2 py-16 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl flex flex-col items-center justify-center shadow-xl text-center px-4">
            <p className="text-neutral-400 text-sm">No specific transfers or experiences available right now.</p>
         </div>
       )}

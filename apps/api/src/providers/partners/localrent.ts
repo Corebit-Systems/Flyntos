@@ -2,11 +2,7 @@ import { SearchContext, PartnerLinkResult } from '../../types/partner';
 import { BasePartnerAdapter } from './base';
 
 export class LocalrentAdapter extends BasePartnerAdapter {
-  generateLink(context: SearchContext, subId: string): PartnerLinkResult[] | null {
-    if (context.destinationIata !== 'TGD' && context.destinationIata !== 'TIV') {
-      return null;
-    }
-
+  generateLink(context: SearchContext, subId: string): PartnerLinkResult | null {
     const params = new URLSearchParams();
     const locationCode = context.destinationIata === 'TIV' ? 'tivat' : 'podgorica';
     params.set('city', locationCode);
@@ -19,57 +15,27 @@ export class LocalrentAdapter extends BasePartnerAdapter {
     const trackingId = process.env.LOCALRENT_TRACKING_ID || 'default_tracking';
     params.set('a', trackingId);
 
-    const baseUrl = `https://localrent.com/montenegro/?${params.toString()}`;
+    // If destination is not TIV or TGD, maybe just point to main page, or null.
+    // The prompt says: "Для авто и яхт (Localrent и др.): Кнопка "Подобрать транспорт" должна вести на White Label".
+    // We can just link to main domain if not montenegro, but let's stick to montenegro for localrent.
+    let baseUrl = `https://localrent.com/`;
+    if (context.destinationIata === 'TGD' || context.destinationIata === 'TIV') {
+        baseUrl = `https://localrent.com/montenegro/`;
+    }
 
-    return [
-      {
-        id: `localrent-economy-${context.destinationIata}`,
+    const deeplink = `${baseUrl}?${params.toString()}`;
+
+    return {
+        id: `localrent-wl-${context.destinationIata}`,
         partnerName: 'Localrent',
         serviceType: 'car',
-        title: 'Hyundai i20 (Economy)',
-        description: 'Auto, no deposit, great for city driving.',
-        imageUrl: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&q=80',
+        title: 'Premium Car Rental',
+        description: 'Explore the destination at your own pace. Discover the best car rental deals with zero deposit options.',
+        imageUrl: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&q=80',
         price: 25,
         currency: 'EUR',
-        deeplink: `${baseUrl}&class=economy`,
+        deeplink: deeplink,
         logoUrl: 'https://localrent.com/images/logo_en.svg',
-      },
-      {
-        id: `localrent-compact-${context.destinationIata}`,
-        partnerName: 'Localrent',
-        serviceType: 'car',
-        title: 'VW Golf (Compact)',
-        description: 'Manual, optimal choice for coastal roads.',
-        imageUrl: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c359?w=800&q=80',
-        price: 35,
-        currency: 'EUR',
-        deeplink: `${baseUrl}&class=compact`,
-        logoUrl: 'https://localrent.com/images/logo_en.svg',
-      },
-      {
-        id: `localrent-cabrio-${context.destinationIata}`,
-        partnerName: 'Localrent',
-        serviceType: 'car',
-        title: 'Mini Cooper Cabrio',
-        description: 'Premium choice for sunny days. Feel the breeze.',
-        imageUrl: 'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=800&q=80',
-        price: 80,
-        currency: 'EUR',
-        deeplink: `${baseUrl}&class=cabriolet`,
-        logoUrl: 'https://localrent.com/images/logo_en.svg',
-      },
-      {
-        id: `localrent-suv-${context.destinationIata}`,
-        partnerName: 'Localrent',
-        serviceType: 'car',
-        title: 'Nissan Qashqai (SUV)',
-        description: 'Spacious and comfortable for mountain trips.',
-        imageUrl: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800&q=80',
-        price: 55,
-        currency: 'EUR',
-        deeplink: `${baseUrl}&class=suv`,
-        logoUrl: 'https://localrent.com/images/logo_en.svg',
-      }
-    ];
+    };
   }
 }

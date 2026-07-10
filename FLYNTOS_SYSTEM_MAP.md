@@ -3,7 +3,9 @@
 This document serves as the single source of truth for the architecture, technology stack, and business logic of **Flyntos.com**.
 
 ## 1. General Concept & Technology Stack
-Flyntos is a multilingual global travel aggregator operating on an Affiliate (Deeplink) Model. We do not process direct bookings; instead, we orchestrate search queries, generate dynamic partner referral links, and earn commissions on successful conversions.
+Flyntos is a hybrid global travel aggregator operating on a dual model:
+1. **Custom In-House Flight Search**: A highly optimized, proprietary engine for flight discovery using Fastify and PostgreSQL.
+2. **White Label Gateways**: Premium, seamless handoffs to partner White Label subdomains and targeted landing pages for Car Rentals, Yachts, Transfers, and Experiences.
 
 **Core Technology Stack:**
 - **Frontend**: Next.js 15 (App Router), React, Tailwind CSS (Glassmorphism design system).
@@ -21,13 +23,13 @@ The search module is highly optimized for fast autocomplete responses:
 - **Prefix Search**: Specifically optimized for short queries (1-3 characters) ensuring instant feedback when a user starts typing an IATA code or city name.
 - **Schema Validation**: All incoming requests are strictly validated using `zod`.
 
-## 3. Monetization Module (Deeplink Generator)
-The revenue engine of Flyntos relies on dynamic affiliate link generation.
+## 3. Monetization Module (White Label Gateways)
+The revenue engine for non-flight services (Cars, Yachts, Extras) relies on dynamic White Label handoffs.
 
 ### Architecture
 - **Adapter Pattern**: We utilize an abstract `BasePartnerAdapter` that enforces a standard contract for all partner integrations.
 - **DeeplinkGeneratorService**: Orchestrates all adapters, routing the `SearchContext` (origin, destination, dates, passengers, locale) to each partner.
-- **Rich Offer Cards**: Adapters return an array of `PartnerLinkResult` containing detailed metadata (title, description, price, imageUrl, serviceType) to populate dynamic glassmorphic UI cards.
+- **Premium WL Handoffs**: Instead of mocking multiple fake cards, adapters generate a single, highly optimized White Label URL containing all search parameters and the unique tracking `subId`. The frontend renders this as a premium glassmorphic promo block.
 - **Tracking (SubID)**: To track conversions via postbacks, the service generates a unique `subId` per search (format: `flyntos-{timestamp}-{origin}{destination}`) and propagates it to all adapters.
 - **Validation & Logging**: Zod schemas strictly validate incoming requests but are robust enough to accept optional fields (`passengers`, `locale`). The API includes end-to-end logging for request contexts and generated adapter payloads to ensure observability.
 - **Production Routing**: The Next.js frontend securely routes to the production API (e.g. `flyntosapi-production.up.railway.app`) using proxy rewrites and prioritizing `NEXT_PUBLIC_API_URL` to avoid localhost fallbacks on production.
