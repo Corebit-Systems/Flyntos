@@ -38,7 +38,7 @@ export async function partnersRoutes(app: FastifyInstance) {
       }
     }
 
-    const ip = (request.headers['x-forwarded-for'] as string || request.ip || '').split(',')[0].trim();
+    const ip = ((request.headers['x-forwarded-for'] as string || request.ip || '').split(',')[0] || '').trim();
     if (ip && ip !== '127.0.0.1' && ip !== '::1') {
       try {
         const response = await fetch(`http://ip-api.com/json/${ip}`);
