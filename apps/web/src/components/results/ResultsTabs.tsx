@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CarResultsView } from "@/components/results/CarResultsView";
+import { ExperiencesView } from "@/components/results/ExperiencesView";
 
 interface ResultsTabsProps {
   dict?: any;
@@ -142,31 +143,15 @@ export function ResultsTabs({
               transition={{ duration: 0.2 }}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                {/* KiwiTaxi */}
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl min-h-[200px]">
-                  <div>
-                    <h4 className="text-lg font-bold text-white mb-2">{rp.extras.transferTitle}</h4>
-                    <p className="text-sm text-neutral-400 leading-relaxed mb-4">
-                      {rp.extras.transferDesc}
-                    </p>
-                  </div>
-                  <a href={`${apiBase}/out/kiwitaxi`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
-                    {rp.extras.transferBtn}
-                  </a>
-                </div>
-
-                {/* Klook */}
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl min-h-[200px]">
-                  <div>
-                    <h4 className="text-lg font-bold text-white mb-2">{rp.extras.excursionsTitle}</h4>
-                    <p className="text-sm text-neutral-400 leading-relaxed mb-4">
-                      {rp.extras.excursionsDesc}
-                    </p>
-                  </div>
-                  <a href={`${apiBase}/out/klook`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
-                    {rp.extras.excursionsBtn}
-                  </a>
+                <div className="col-span-1 md:col-span-2">
+                  <ExperiencesView
+                    dict={dict}
+                    originCode={originCode}
+                    destinationCode={destinationCode}
+                    destinationName={destinationName}
+                    departDate={departDate}
+                    returnDate={returnDate}
+                  />
                 </div>
 
                 {/* Saily */}

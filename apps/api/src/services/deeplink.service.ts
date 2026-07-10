@@ -3,6 +3,9 @@ import { BasePartnerAdapter } from '../providers/partners/base';
 import { KiwiAffiliateAdapter } from '../providers/partners/kiwi';
 import { AviasalesAdapter } from '../providers/partners/aviasales';
 import { LocalrentAdapter } from '../providers/partners/localrent';
+import { KiwiTaxiAdapter } from '../providers/partners/kiwitaxi';
+import { GetYourGuideAdapter } from '../providers/partners/getyourguide';
+import { KlookAdapter } from '../providers/partners/klook';
 
 export class DeeplinkGeneratorService {
   private adapters: BasePartnerAdapter[];
@@ -11,7 +14,10 @@ export class DeeplinkGeneratorService {
     this.adapters = [
       new KiwiAffiliateAdapter(),
       new AviasalesAdapter(),
-      new LocalrentAdapter()
+      new LocalrentAdapter(),
+      new KiwiTaxiAdapter(),
+      new GetYourGuideAdapter(),
+      new KlookAdapter()
     ];
   }
 

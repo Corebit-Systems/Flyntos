@@ -39,6 +39,12 @@ Currently, the following partners are integrated into the monetization engine:
    - **Mechanism**: Converts standard YYYY-MM-DD dates to Aviasales' `DDMM` format. Wraps the destination search string in a `tp.media` redirect link using our official `marker` and `sub_id`.
 3. **Localrent (Car Rentals)**
    - **Mechanism**: Generates targeted car rental links exclusively when the destination is Montenegro (TGD or TIV). Uses `subid` for tracking.
+4. **KiwiTaxi (Transfers)**
+   - **Mechanism**: Generates a referral link for an individual transfer from the arrival airport (`destinationIata`) to popular destinations around it or to a general booking page, passing our `subId` via the `pap` parameter. Supports localized landing pages.
+5. **GetYourGuide (Experiences & Tours)**
+   - **Mechanism**: Oriented towards global and European audiences. Forms a partner URL with a search query (`q`) based on the arrival city/airport and passes the interface language (`locale`), so the user lands on a localized activity page. Integrates tracking via `partner_id`.
+6. **Klook (Activities & Attractions)**
+   - **Mechanism**: A global partner. Generates a link for tours and entry tickets for the destination city, integrating the tracking parameter via `aff_sub`.
 
 ## 5. Frontend Architecture (Web)
 The Web module provides a premium, "calmer route to flight discovery" user experience.
@@ -48,12 +54,13 @@ The Web module provides a premium, "calmer route to flight discovery" user exper
   - **FilterSidebar**: A dynamically generated filter panel with sliders, checkboxes, and tabs based on the available flights.
   - **useFlightFilters**: A highly optimized, memoized React hook that handles client-side filtering (max price, airlines, stops, baggage, Smart Connect) and sorting (cheapest, fastest, optimal).
   - **FlightCard**: An interactive, glassmorphism-styled component displaying flight details, including specific badges for Flyntos Smart Connect.
+  - **ResultsTabs & Cross-sell Views**: Includes dynamic tabs for Flights, Car Rentals (`CarResultsView`), and Extras (`ExperiencesView` for transfers and experiences). All partner cards use a unified glassmorphic design and open tracking deeplinks in new tabs.
 
 ## 6. Internationalization (I18n)
 Flyntos is built from the ground up for a global audience.
-- **Supported Locales**: `en`, `ru`, `es`, `ar` (Active UI Locales).
+- **Supported Locales**: `EN`, `RU`, `ES`, `AR` (Active UI Locales).
 - **Mechanism**: Next.js App Router dynamic segments `[locale]`.
-- **Search Logic**: The backend intelligently searches airport and city names in the user's selected locale. If an exact match is missing, it automatically falls back to English (`en`).
+- **Search Logic**: The backend intelligently searches airport and city names in the user's selected locale. If an exact match is missing, it automatically falls back to English (`EN`).
 
 ---
 *This document should be updated whenever a new partner is added or a core architectural change is made.*

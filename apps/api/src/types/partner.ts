@@ -9,7 +9,7 @@ export interface SearchContext {
 
 export interface PartnerLinkResult {
   partnerName: string;
-  serviceType: 'flight' | 'car';
+  serviceType: 'flight' | 'car' | 'transfer' | 'experience';
   deeplink: string;
   logoUrl: string;
   minEstimatedPrice?: number;
