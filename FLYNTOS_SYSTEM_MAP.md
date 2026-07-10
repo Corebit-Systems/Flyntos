@@ -29,6 +29,8 @@ The revenue engine of Flyntos relies on dynamic affiliate link generation.
 - **DeeplinkGeneratorService**: Orchestrates all adapters, routing the `SearchContext` (origin, destination, dates, passengers, locale) to each partner.
 - **Rich Offer Cards**: Adapters return an array of `PartnerLinkResult` containing detailed metadata (title, description, price, imageUrl, serviceType) to populate dynamic glassmorphic UI cards.
 - **Tracking (SubID)**: To track conversions via postbacks, the service generates a unique `subId` per search (format: `flyntos-{timestamp}-{origin}{destination}`) and propagates it to all adapters.
+- **Validation & Logging**: Zod schemas strictly validate incoming requests but are robust enough to accept optional fields (`passengers`, `locale`). The API includes end-to-end logging for request contexts and generated adapter payloads to ensure observability.
+- **Production Routing**: The Next.js frontend securely routes to the production API (e.g. `flyntosapi-production.up.railway.app`) using proxy rewrites and prioritizing `NEXT_PUBLIC_API_URL` to avoid localhost fallbacks on production.
 
 ## 4. Connected Partners
 Currently, the following partners are integrated into the monetization engine:

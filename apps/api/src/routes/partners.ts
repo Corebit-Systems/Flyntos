@@ -12,16 +12,27 @@ export async function partnersRoutes(app: FastifyInstance) {
       destinationIata: z.string().min(3).max(3),
       departureDate: z.string(), // YYYY-MM-DD
       returnDate: z.string().optional(),
-      passengers: z.number().int().positive().default(1),
-      locale: z.string().default('en')
+      passengers: z.number().int().positive().optional(),
+      locale: z.string().optional()
     });
 
     const parsed = bodySchema.safeParse(request.body);
     if (!parsed.success) {
+      console.error('[Partners API] Invalid parameters:', parsed.error.issues);
       return reply.code(400).send({ error: 'Invalid parameters', details: parsed.error.issues });
     }
 
-    const links = deeplinkService.generateAllLinks(parsed.data);
+    console.log('[Partners API] Request SearchContext:', parsed.data);
+    
+    const context = {
+      ...parsed.data,
+      passengers: parsed.data.passengers || 1,
+      locale: parsed.data.locale || 'en'
+    };
+
+    const links = deeplinkService.generateAllLinks(context);
+    console.log(`[Partners API] Generated ${links.length} links for destination ${context.destinationIata}`);
+    
     return reply.send({ data: links });
   });
 

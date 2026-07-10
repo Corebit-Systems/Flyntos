@@ -14,10 +14,10 @@ const nextConfig = {
     '@flyntos/ui'
   ],
   async rewrites() {
-    const rawUrl = process.env.API_BASE_URL;
+    const rawUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_BASE_URL;
     console.log("API_BASE_URL during build:", rawUrl);
     
-    let baseUrl = (rawUrl || 'http://localhost:4000').trim();
+    let baseUrl = (rawUrl || 'https://flyntosapi-production.up.railway.app').trim();
     if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://') && !baseUrl.startsWith('/')) {
       baseUrl = 'https://' + baseUrl;
     }
