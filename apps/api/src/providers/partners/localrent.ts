@@ -62,7 +62,15 @@ export class LocalrentAdapter extends BasePartnerAdapter {
   generateLink(context: SearchContext, subId: string): PartnerLinkResult | null {
     const dest = context.destinationIata.toUpperCase();
     const countrySlug = iataToCountrySlug[dest];
-    const locationCode = iataToCitySlug[dest] || dest.toLowerCase();
+    
+    let locationCode = '';
+    if (dest === 'TIV') {
+      locationCode = 'tivat';
+    } else if (dest === 'TGD') {
+      locationCode = 'podgorica';
+    } else {
+      locationCode = iataToCitySlug[dest] || dest.toLowerCase();
+    }
 
     const params = new URLSearchParams();
     params.set('city', locationCode);

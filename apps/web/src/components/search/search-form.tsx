@@ -195,7 +195,7 @@ export function SearchForm({
   const router = useRouter();
   const { step, setStep, steps } = useWizard();
 
-  const [fromCity, setFromCity] = useState(initialOrigin);
+  const [fromCity, setFromCity] = useState(initialOrigin || 'FRA');
   const [toCity, setToCity] = useState(initialDestination);
   const [departDate, setDepartDate] = useState('');
   const [returnDate, setReturnDate] = useState('');
@@ -240,6 +240,10 @@ export function SearchForm({
         if (backendRes.ok) {
           const geoData = await backendRes.json();
           if (geoData && geoData.origin) {
+            if (geoData.country === 'ME' || geoData.origin === 'TIV') {
+              setFromCity('TIV');
+              return;
+            }
             setFromCity(geoData.origin);
             return; // Successful detection, exit early
           }
@@ -253,19 +257,49 @@ export function SearchForm({
         const res = await fetch('https://ipapi.co/json/');
         if (res.ok) {
           const data = await res.json();
-          const cityEn = data.city;
-          if (cityEn) {
+          const country = data.country_name || data.country;
+          const city = data.city;
+          if (country === 'Montenegro' && city === 'Tivat') {
+            setFromCity('TIV');
+            return;
+          }
+          if (city) {
             const airport = AIRPORTS.find(a => 
-              a.city_en?.toLowerCase() === cityEn.toLowerCase() || 
-              a.city_ru?.toLowerCase() === cityEn.toLowerCase()
+              a.city_en?.toLowerCase() === city.toLowerCase() || 
+              a.city_ru?.toLowerCase() === city.toLowerCase()
             );
             if (airport) {
               setFromCity(airport.code);
+              return;
             }
           }
         }
       } catch (err) {
-        // ignore and leave empty
+        // Try fallback to ip-api.com
+        try {
+          const res = await fetch('https://ip-api.com/json/');
+          if (res.ok) {
+            const data = await res.json();
+            const country = data.country;
+            const city = data.city;
+            if (country === 'Montenegro' && city === 'Tivat') {
+              setFromCity('TIV');
+              return;
+            }
+            if (city) {
+              const airport = AIRPORTS.find(a => 
+                a.city_en?.toLowerCase() === city.toLowerCase() || 
+                a.city_ru?.toLowerCase() === city.toLowerCase()
+              );
+              if (airport) {
+                setFromCity(airport.code);
+                return;
+              }
+            }
+          }
+        } catch (e2) {
+          // ignore
+        }
       }
     }
     detectLocation();

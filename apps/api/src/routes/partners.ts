@@ -28,6 +28,7 @@ export async function partnersRoutes(app: FastifyInstance) {
 
     const countryHeader = request.headers['cf-ipcountry'] || 
                           request.headers['x-vercel-ip-country'] || 
+                          request.headers['x-railway-ip-country'] ||
                           request.headers['x-appengine-country'] ||
                           request.headers['cf-device-subcontinent']; // Cloudflare specific
                           
