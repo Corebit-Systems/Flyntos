@@ -234,26 +234,10 @@ export function SearchForm({
   useEffect(() => {
     async function detectLocation() {
       if (initialOrigin) return; // Skip if already set
+      
+      // 1. Try client-side detection first (highly accurate as it runs directly in the user's browser)
       try {
-        // Try backend GeoIP detection first
-        const backendRes = await fetch('/api-proxy/geo/detect');
-        if (backendRes.ok) {
-          const geoData = await backendRes.json();
-          if (geoData && geoData.origin) {
-            if (geoData.country === 'ME' || geoData.origin === 'TIV') {
-              setFromCity('TIV');
-              return;
-            }
-            setFromCity(geoData.origin);
-            return; // Successful detection, exit early
-          }
-        }
-      } catch (e) {
-        // Fallback to client-side detection
-      }
-
-      try {
-        // Client-side fallback via ipapi.co
+        // Client-side lookup via ipapi.co
         const res = await fetch('https://ipapi.co/json/');
         if (res.ok) {
           const data = await res.json();
@@ -275,7 +259,7 @@ export function SearchForm({
           }
         }
       } catch (err) {
-        // Try fallback to ip-api.com
+        // Try fallback to ip-api.com client-side
         try {
           const res = await fetch('https://ip-api.com/json/');
           if (res.ok) {
@@ -298,8 +282,26 @@ export function SearchForm({
             }
           }
         } catch (e2) {
-          // ignore
+          // ignore client-side errors and fallback to backend
         }
+      }
+
+      // 2. Try backend GeoIP detection as a fallback (may be subject to server/proxy regions)
+      try {
+        const backendRes = await fetch('/api-proxy/geo/detect');
+        if (backendRes.ok) {
+          const geoData = await backendRes.json();
+          if (geoData && geoData.origin) {
+            if (geoData.country === 'ME' || geoData.origin === 'TIV') {
+              setFromCity('TIV');
+              return;
+            }
+            setFromCity(geoData.origin);
+            return; // Successful detection, exit early
+          }
+        }
+      } catch (e) {
+        // Fallback to default
       }
     }
     detectLocation();
