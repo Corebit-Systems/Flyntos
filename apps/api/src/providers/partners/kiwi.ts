@@ -28,8 +28,14 @@ export class KiwiAffiliateAdapter extends BasePartnerAdapter {
     const deeplink = `${this.BASE_URL}?${params.toString()}`;
 
     return {
+      id: `kiwi-flight-${context.destinationIata}`,
       partnerName: 'Kiwi.com',
       serviceType: 'flight',
+      title: 'Flight with Kiwi.com',
+      description: 'Search for flights with Kiwi.com',
+      imageUrl: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&q=80',
+      price: 0,
+      currency: 'EUR',
       deeplink,
       logoUrl: 'https://images.kiwi.com/logo/kiwi.com-logo-default.svg', // generic kiwi logo
     };

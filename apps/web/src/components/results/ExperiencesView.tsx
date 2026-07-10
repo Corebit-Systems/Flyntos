@@ -12,11 +12,16 @@ interface ExperiencesViewProps {
 }
 
 interface PartnerLinkResult {
+  id: string;
   partnerName: string;
   serviceType: 'flight' | 'car' | 'transfer' | 'experience';
+  title: string;
+  description: string;
+  imageUrl: string;
+  price: number;
+  currency: string;
   deeplink: string;
-  logoUrl: string;
-  minEstimatedPrice?: number;
+  logoUrl?: string;
 }
 
 export function ExperiencesView({
@@ -32,12 +37,8 @@ export function ExperiencesView({
 
   const rp = dict?.ui?.resultsPage || {
     extras: {
-      transferTitle: 'Airport Transfer',
-      transferDesc: 'Comfortable individual transfer from the airport to your hotel.',
       transferBtn: 'Book Transfer',
-      excursionsTitle: 'Experiences & Tours',
-      excursionsDesc: 'Book top-rated tours and activities in {city}.',
-      excursionsBtn: 'View Experiences'
+      excursionsBtn: 'View Experience'
     }
   };
 
@@ -60,12 +61,13 @@ export function ExperiencesView({
             departureDate: departDate,
             returnDate: returnDate || undefined,
             passengers: 1,
-            locale: 'en', // fallback, actual locale could be passed from dict/context
+            locale: 'en',
           }),
         });
 
         if (res.ok) {
-          const data: PartnerLinkResult[] = await res.json();
+          const json = await res.json();
+          const data: PartnerLinkResult[] = Array.isArray(json) ? json : json.data || [];
           setLinks(data.filter(l => l.serviceType === 'transfer' || l.serviceType === 'experience'));
         }
       } catch (err) {
@@ -91,15 +93,22 @@ export function ExperiencesView({
   const experienceLinks = links.filter(l => l.serviceType === 'experience');
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {/* Transfers */}
       {transferLinks.map((link, idx) => (
-        <div key={`transfer-${idx}`} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl min-h-[200px]">
+        <div key={link.id || `transfer-${idx}`} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl min-h-[300px] group">
           <div>
-            <h4 className="text-lg font-bold text-white mb-2">{rp.extras.transferTitle} - {link.partnerName}</h4>
-            <p className="text-sm text-neutral-400 leading-relaxed mb-4">
-              {rp.extras.transferDesc.replace('{city}', destinationName)}
+            <div 
+              className="w-full h-32 bg-cover bg-center rounded-xl mb-4 group-hover:scale-[1.02] transition-transform duration-500" 
+              style={{ backgroundImage: `url('${link.imageUrl}')` }}
+            />
+            <h4 className="text-lg font-bold text-white mb-2">{link.title}</h4>
+            <p className="text-sm text-neutral-400 leading-relaxed mb-2 line-clamp-2">
+              {link.description}
             </p>
+            <div className="text-xl font-bold text-emerald-400 mb-6">
+              from {link.price} {link.currency}
+            </div>
           </div>
           <a href={link.deeplink} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
             {rp.extras.transferBtn}
@@ -109,12 +118,19 @@ export function ExperiencesView({
 
       {/* Experiences */}
       {experienceLinks.map((link, idx) => (
-        <div key={`exp-${idx}`} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl min-h-[200px]">
+        <div key={link.id || `exp-${idx}`} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl min-h-[300px] group">
           <div>
-            <h4 className="text-lg font-bold text-white mb-2">{rp.extras.excursionsTitle} - {link.partnerName}</h4>
-            <p className="text-sm text-neutral-400 leading-relaxed mb-4">
-              {rp.extras.excursionsDesc.replace('{city}', destinationName)}
+            <div 
+              className="w-full h-32 bg-cover bg-center rounded-xl mb-4 group-hover:scale-[1.02] transition-transform duration-500" 
+              style={{ backgroundImage: `url('${link.imageUrl}')` }}
+            />
+            <h4 className="text-lg font-bold text-white mb-2">{link.title}</h4>
+            <p className="text-sm text-neutral-400 leading-relaxed mb-2 line-clamp-2">
+              {link.description}
             </p>
+            <div className="text-xl font-bold text-emerald-400 mb-6">
+              from {link.price} {link.currency}
+            </div>
           </div>
           <a href={link.deeplink} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
             {rp.extras.excursionsBtn}
@@ -123,7 +139,7 @@ export function ExperiencesView({
       ))}
 
       {links.length === 0 && (
-        <div className="col-span-1 md:col-span-2 py-16 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl flex flex-col items-center justify-center shadow-xl text-center px-4">
+        <div className="col-span-1 md:col-span-2 lg:col-span-3 py-16 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl flex flex-col items-center justify-center shadow-xl text-center px-4">
            <p className="text-neutral-400 text-sm">No specific transfers or experiences available right now.</p>
         </div>
       )}

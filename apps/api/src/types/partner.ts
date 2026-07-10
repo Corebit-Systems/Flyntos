@@ -8,9 +8,15 @@ export interface SearchContext {
 }
 
 export interface PartnerLinkResult {
+  id: string;
   partnerName: string;
   serviceType: 'flight' | 'car' | 'transfer' | 'experience';
+  title: string;
+  description: string;
+  imageUrl: string;
+  price: number;
+  currency: string;
   deeplink: string;
-  logoUrl: string;
+  logoUrl?: string;
   minEstimatedPrice?: number;
 }

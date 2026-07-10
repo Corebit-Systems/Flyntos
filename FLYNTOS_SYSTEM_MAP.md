@@ -27,6 +27,7 @@ The revenue engine of Flyntos relies on dynamic affiliate link generation.
 ### Architecture
 - **Adapter Pattern**: We utilize an abstract `BasePartnerAdapter` that enforces a standard contract for all partner integrations.
 - **DeeplinkGeneratorService**: Orchestrates all adapters, routing the `SearchContext` (origin, destination, dates, passengers, locale) to each partner.
+- **Rich Offer Cards**: Adapters return an array of `PartnerLinkResult` containing detailed metadata (title, description, price, imageUrl, serviceType) to populate dynamic glassmorphic UI cards.
 - **Tracking (SubID)**: To track conversions via postbacks, the service generates a unique `subId` per search (format: `flyntos-{timestamp}-{origin}{destination}`) and propagates it to all adapters.
 
 ## 4. Connected Partners

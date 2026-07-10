@@ -44,8 +44,14 @@ export class AviasalesAdapter extends BasePartnerAdapter {
     const deeplink = `https://tp.media/r?${tpParams.toString()}`;
 
     return {
+      id: `aviasales-flight-${context.destinationIata}`,
       partnerName: 'Aviasales',
       serviceType: 'flight',
+      title: 'Flight with Aviasales',
+      description: 'Search for flights with Aviasales',
+      imageUrl: 'https://images.unsplash.com/photo-1542296332-2e4473faf563?w=800&q=80',
+      price: 0,
+      currency: 'EUR',
       deeplink,
       logoUrl: 'https://cdn.worldvectorlogo.com/logos/aviasales.svg',
     };

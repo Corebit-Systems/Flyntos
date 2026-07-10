@@ -41,7 +41,11 @@ export class DeeplinkGeneratorService {
     for (const adapter of this.adapters) {
       const link = adapter.generateLink(context, subId);
       if (link) {
-        results.push(link);
+        if (Array.isArray(link)) {
+          results.push(...link);
+        } else {
+          results.push(link);
+        }
       }
     }
 
