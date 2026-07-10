@@ -7,6 +7,9 @@ export async function partnersRoutes(app: FastifyInstance) {
 
   // GEO DETECT ROUTE
   app.get('/geo/detect', async (request, reply) => {
+    console.log('[GEO DETECT] Headers:', request.headers);
+    console.log('[GEO DETECT] request.ip:', request.ip);
+    console.log('[GEO DETECT] x-forwarded-for:', request.headers['x-forwarded-for']);
     const countryToIata: Record<string, string> = {
       ME: 'TIV',
       CY: 'LCA',
