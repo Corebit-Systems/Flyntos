@@ -1,7 +1,30 @@
 import { FastifyInstance } from 'fastify';
 import { z } from 'zod';
+import { DeeplinkGeneratorService } from '../services/deeplink.service';
 
 export async function partnersRoutes(app: FastifyInstance) {
+  const deeplinkService = new DeeplinkGeneratorService();
+
+  // DEEPLINKS ROUTE
+  app.post('/partners/links', async (request, reply) => {
+    const bodySchema = z.object({
+      originIata: z.string().min(3).max(3),
+      destinationIata: z.string().min(3).max(3),
+      departureDate: z.string(), // YYYY-MM-DD
+      returnDate: z.string().optional(),
+      passengers: z.number().int().positive().default(1),
+      locale: z.string().default('en')
+    });
+
+    const parsed = bodySchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Invalid parameters', details: parsed.error.issues });
+    }
+
+    const links = deeplinkService.generateAllLinks(parsed.data);
+    return reply.send({ data: links });
+  });
+
   // CARS ROUTE
   app.get('/partners/cars', async (request, reply) => {
     const querySchema = z.object({
