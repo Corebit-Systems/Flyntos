@@ -22,6 +22,7 @@ The search module is highly optimized for fast autocomplete responses:
 - **Indexing**: Uses PostgreSQL GIN (Generalized Inverted Index) with `pg_trgm` for fast trigram-based fuzzy matching.
 - **Prefix Search**: Specifically optimized for short queries (1-3 characters) ensuring instant feedback when a user starts typing an IATA code or city name.
 - **Schema Validation**: All incoming requests are strictly validated using `zod`.
+- **GeoIP Detection**: Serves `/api/geo/detect` which resolves the user's nearest airport using HTTP headers (like `cf-ipcountry` on Cloudflare or `x-vercel-ip-country`) and falls back to server-side GeoIP APIs (like `ip-api.com`) or client-side fallbacks (like `ipapi.co`) to pre-fill the search origin ("From") field.
 
 ## 3. Monetization Module (White Label Gateways)
 The revenue engine for non-flight services (Cars, Yachts, Extras) relies on dynamic White Label handoffs.
@@ -43,8 +44,8 @@ Currently, the following partners are integrated into the monetization engine:
 2. **Aviasales / Travelpayouts (Flights)**
    - **Mechanism**: Converts standard YYYY-MM-DD dates to Aviasales' `DDMM` format. Wraps the destination search string in a `tp.media` redirect link using our official `marker` and `sub_id`.
 3. **Localrent (Car Rentals)**
-   - **Mechanism**: Generates targeted car rental links exclusively when the destination is Montenegro (TGD or TIV). Uses `subid` for tracking.
-   - **Parameter Rules**: City must be passed as `city=tivat` or `city=podgorica`. Dates must be strictly formatted as `YYYY-MM-DD` (without spaces) for `date_from` and `date_to`.
+   - **Mechanism**: Generates targeted car rental links mapping arrival IATA codes dynamically to Localrent-supported country slugs (e.g. Montenegro, Cyprus, Greece, Georgia, UAE, Thailand, Turkey).
+   - **Parameter Rules**: City must be passed as a valid slug (like `city=tivat` or `city=larnaca`). Dates must be strictly formatted as `YYYY-MM-DD` (without spaces) for `date_from` and `date_to`. Uses `subid` for tracking.
 4. **KiwiTaxi (Transfers)**
    - **Mechanism**: Generates a referral link for an individual transfer from the arrival airport (`destinationIata`) to popular destinations around it or to a general booking page, passing our `subId` via the `pap` parameter. Supports localized landing pages.
 5. **GetYourGuide (Experiences & Tours)**

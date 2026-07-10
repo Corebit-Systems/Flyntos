@@ -5,6 +5,59 @@ import { DeeplinkGeneratorService } from '../services/deeplink.service';
 export async function partnersRoutes(app: FastifyInstance) {
   const deeplinkService = new DeeplinkGeneratorService();
 
+  // GEO DETECT ROUTE
+  app.get('/geo/detect', async (request, reply) => {
+    const countryToIata: Record<string, string> = {
+      ME: 'TIV',
+      CY: 'LCA',
+      GR: 'ATH',
+      GE: 'TBS',
+      AE: 'DXB',
+      TH: 'BKK',
+      TR: 'IST',
+      RU: 'SVO',
+      ES: 'MAD',
+      IT: 'FCO',
+      GB: 'LHR',
+      DE: 'FRA',
+      FR: 'CDG',
+      US: 'JFK',
+      UA: 'KBP',
+      KZ: 'ALA',
+    };
+
+    const countryHeader = request.headers['cf-ipcountry'] || 
+                          request.headers['x-vercel-ip-country'] || 
+                          request.headers['x-appengine-country'] ||
+                          request.headers['cf-device-subcontinent']; // Cloudflare specific
+                          
+    if (countryHeader && typeof countryHeader === 'string') {
+      const code = countryHeader.toUpperCase();
+      if (countryToIata[code]) {
+        return reply.send({ country: code, origin: countryToIata[code] });
+      }
+    }
+
+    const ip = (request.headers['x-forwarded-for'] as string || request.ip || '').split(',')[0].trim();
+    if (ip && ip !== '127.0.0.1' && ip !== '::1') {
+      try {
+        const response = await fetch(`http://ip-api.com/json/${ip}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.countryCode) {
+            const code = data.countryCode.toUpperCase();
+            const origin = countryToIata[code] || 'MOW';
+            return reply.send({ country: code, origin });
+          }
+        }
+      } catch (e) {
+        // Safe fail
+      }
+    }
+
+    return reply.send({ country: 'US', origin: 'JFK' });
+  });
+
   // DEEPLINKS ROUTE
   app.post('/partners/links', async (request, reply) => {
     const bodySchema = z.object({

@@ -235,6 +235,21 @@ export function SearchForm({
     async function detectLocation() {
       if (initialOrigin) return; // Skip if already set
       try {
+        // Try backend GeoIP detection first
+        const backendRes = await fetch('/api-proxy/geo/detect');
+        if (backendRes.ok) {
+          const geoData = await backendRes.json();
+          if (geoData && geoData.origin) {
+            setFromCity(geoData.origin);
+            return; // Successful detection, exit early
+          }
+        }
+      } catch (e) {
+        // Fallback to client-side detection
+      }
+
+      try {
+        // Client-side fallback via ipapi.co
         const res = await fetch('https://ipapi.co/json/');
         if (res.ok) {
           const data = await res.json();
