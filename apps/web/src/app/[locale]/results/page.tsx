@@ -2,8 +2,80 @@ import { getDictionary } from '@flyntos/i18n';
 import { getLocale } from '../../../lib/get-locale';
 import { PriceMatrix } from '../../../components/results/PriceMatrix';
 import { ResultsTabs } from '../../../components/results/ResultsTabs';
+import { FlightResultsView } from '../../../components/flights/FlightResultsView';
+import { FlightOffer } from '../../../types/flight';
 import Link from 'next/link';
 import airportsData from '../../../data/airports.json';
+
+// Helper to generate mock flights
+function generateMockFlights(origin: string, destination: string): FlightOffer[] {
+  return [
+    {
+      id: 'f1',
+      price: 150,
+      currency: '€',
+      totalDurationMinutes: 180,
+      stops: 0,
+      airlineCode: 'FR',
+      airlineName: 'Ryanair',
+      cnxType: 'Standard',
+      baggageIncluded: false,
+      score: 8.5,
+      departureTime: '10:00',
+      arrivalTime: '13:00',
+      origin,
+      destination,
+    },
+    {
+      id: 'f2',
+      price: 250,
+      currency: '€',
+      totalDurationMinutes: 195,
+      stops: 0,
+      airlineCode: 'LH',
+      airlineName: 'Lufthansa',
+      cnxType: 'Standard',
+      baggageIncluded: true,
+      score: 9.2,
+      departureTime: '14:30',
+      arrivalTime: '17:45',
+      origin,
+      destination,
+    },
+    {
+      id: 'f3',
+      price: 120,
+      currency: '€',
+      totalDurationMinutes: 400,
+      stops: 1,
+      airlineCode: 'W6',
+      airlineName: 'Wizz Air',
+      cnxType: 'Flyntos_SmartConnect',
+      baggageIncluded: false,
+      score: 7.0,
+      departureTime: '06:00',
+      arrivalTime: '12:40',
+      origin,
+      destination,
+    },
+    {
+      id: 'f4',
+      price: 350,
+      currency: '€',
+      totalDurationMinutes: 240,
+      stops: 1,
+      airlineCode: 'TK',
+      airlineName: 'Turkish Airlines',
+      cnxType: 'Standard',
+      baggageIncluded: true,
+      score: 8.9,
+      departureTime: '22:00',
+      arrivalTime: '02:00',
+      origin,
+      destination,
+    },
+  ];
+}
 
 // Simple XSS sanitization (Next.js automatically escapes in JSX, but this is a requested explicit sanitization)
 const sanitize = (str: string | undefined | null) => {
@@ -120,10 +192,13 @@ export default async function ResultsPage({
           </Link>
         </div>
       ) : (
-        <>
+        <div className="w-full flex flex-col gap-12">
           <PriceMatrix origin={safeOrigin} destination={safeDestination} departDate={safeDepartDate} />
+          
+          <FlightResultsView initialOffers={generateMockFlights(safeOrigin, safeDestination)} />
+
           <ResultsTabs dict={dict} destinationName={destinationName} originCode={safeOrigin} destinationCode={safeDestination} departDate={safeDepartDate} />
-        </>
+        </div>
       )}
     </div>
   );
