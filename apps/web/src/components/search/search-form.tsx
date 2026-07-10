@@ -235,15 +235,14 @@ export function SearchForm({
     async function detectLocation() {
       if (initialOrigin) return; // Skip if already set
       
-      // 1. Try client-side detection first (highly accurate as it runs directly in the user's browser)
+      // 1. Try ipinfo.io (HTTPS, CORS, no auth)
       try {
-        // Client-side lookup via ipapi.co
-        const res = await fetch('https://ipapi.co/json/');
+        const res = await fetch('https://ipinfo.io/json');
         if (res.ok) {
           const data = await res.json();
-          const country = data.country_name || data.country;
+          const country = data.country;
           const city = data.city;
-          if (country === 'Montenegro' && city === 'Tivat') {
+          if (country === 'ME' || country === 'Montenegro') {
             setFromCity('TIV');
             return;
           }
@@ -258,35 +257,57 @@ export function SearchForm({
             }
           }
         }
-      } catch (err) {
-        // Try fallback to ip-api.com client-side
-        try {
-          const res = await fetch('https://ip-api.com/json/');
-          if (res.ok) {
-            const data = await res.json();
-            const country = data.country;
-            const city = data.city;
-            if (country === 'Montenegro' && city === 'Tivat') {
-              setFromCity('TIV');
+      } catch (e) {}
+
+      // 2. Try free.freeipapi.com (HTTPS, CORS, no auth)
+      try {
+        const res = await fetch('https://free.freeipapi.com/api/json');
+        if (res.ok) {
+          const data = await res.json();
+          const country = data.countryCode || data.countryName;
+          const city = data.cityName || data.city;
+          if (country === 'ME' || country === 'Montenegro') {
+            setFromCity('TIV');
+            return;
+          }
+          if (city) {
+            const airport = AIRPORTS.find(a => 
+              a.city_en?.toLowerCase() === city.toLowerCase() || 
+              a.city_ru?.toLowerCase() === city.toLowerCase()
+            );
+            if (airport) {
+              setFromCity(airport.code);
               return;
             }
-            if (city) {
-              const airport = AIRPORTS.find(a => 
-                a.city_en?.toLowerCase() === city.toLowerCase() || 
-                a.city_ru?.toLowerCase() === city.toLowerCase()
-              );
-              if (airport) {
-                setFromCity(airport.code);
-                return;
-              }
+          }
+        }
+      } catch (e) {}
+
+      // 3. Try ipapi.co (HTTPS, CORS, free rate limits)
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        if (res.ok) {
+          const data = await res.json();
+          const country = data.country_code || data.country || data.country_name;
+          const city = data.city;
+          if (country === 'ME' || country === 'Montenegro') {
+            setFromCity('TIV');
+            return;
+          }
+          if (city) {
+            const airport = AIRPORTS.find(a => 
+              a.city_en?.toLowerCase() === city.toLowerCase() || 
+              a.city_ru?.toLowerCase() === city.toLowerCase()
+            );
+            if (airport) {
+              setFromCity(airport.code);
+              return;
             }
           }
-        } catch (e2) {
-          // ignore client-side errors and fallback to backend
         }
-      }
+      } catch (e) {}
 
-      // 2. Try backend GeoIP detection as a fallback (may be subject to server/proxy regions)
+      // 4. Try backend GeoIP detection as a fallback (may be subject to server/proxy regions)
       try {
         const backendRes = await fetch('/api-proxy/geo/detect');
         if (backendRes.ok) {
