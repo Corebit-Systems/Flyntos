@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CarResultsView } from './CarResultsView';
+import { CarResultsView } from "@/components/results/CarResultsView";
 
 interface ResultsTabsProps {
   dict?: any;
@@ -13,11 +13,11 @@ interface ResultsTabsProps {
   returnDate?: string;
 }
 
-export function ResultsTabs({ 
-  dict, 
-  destinationName = '...', 
-  originCode = '', 
-  destinationCode = '', 
+export function ResultsTabs({
+  dict,
+  destinationName = '...',
+  originCode = '',
+  destinationCode = '',
   departDate = '',
   returnDate = ''
 }: ResultsTabsProps) {
@@ -61,7 +61,7 @@ export function ResultsTabs({
 
   return (
     <div className="w-full max-w-5xl flex flex-col gap-6 relative z-10">
-      
+
       {/* Tabs Navigation */}
       <div className="flex items-center justify-center gap-4 mb-4">
         <div className="flex bg-white/5 backdrop-blur-md border border-white/10 rounded-full p-1 relative">
@@ -95,7 +95,7 @@ export function ResultsTabs({
       {/* Tab Content */}
       <div className="min-h-[400px]">
         <AnimatePresence mode="wait">
-          
+
           {currentTab === 'cars' && (
             <motion.div
               key="cars"
@@ -104,7 +104,7 @@ export function ResultsTabs({
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-              
+
               {/* Section header */}
               <div className="mb-6">
                 <h3 className="text-xl font-bold text-white">
@@ -121,13 +121,13 @@ export function ResultsTabs({
                 <p className="text-xs text-neutral-500 mt-1">{rp.transportSubtitle}</p>
               </div>
 
-              <CarResultsView 
-                dict={dict} 
-                originCode={originCode} 
-                destinationCode={destinationCode} 
+              <CarResultsView
+                dict={dict}
+                originCode={originCode}
+                destinationCode={destinationCode}
                 destinationName={destinationName}
-                departDate={departDate} 
-                returnDate={returnDate} 
+                departDate={departDate}
+                returnDate={returnDate}
               />
 
             </motion.div>
@@ -142,7 +142,7 @@ export function ResultsTabs({
               transition={{ duration: 0.2 }}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
+
                 {/* KiwiTaxi */}
                 <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl min-h-[200px]">
                   <div>
@@ -198,7 +198,7 @@ export function ResultsTabs({
               </div>
             </motion.div>
           )}
-          
+
         </AnimatePresence>
       </div>
     </div>
