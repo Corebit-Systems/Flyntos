@@ -9,6 +9,7 @@ import { searchRoutes } from './routes/search';
 import { redirectRoutes } from './routes/redirect';
 import { pricesRoutes } from './routes/prices';
 import { partnersRoutes } from './routes/partners';
+import { airportRoutes } from './routes/airports';
 const env = envSchema.parse(process.env);
 const app = Fastify({ logger: true });
 await app.register(cors, {
@@ -27,5 +28,6 @@ await app.register(searchRoutes);
 await app.register(redirectRoutes);
 await app.register(pricesRoutes);
 await app.register(partnersRoutes);
+await app.register(airportRoutes);
 app.setErrorHandler((error, _request, reply) => reply.code(400).send({ message: 'Request failed safely', detail: error instanceof Error ? error.message : 'Unknown error' }));
 app.listen({ port: env.PORT, host: '0.0.0.0' }).then(() => app.log.info('Flyntos API listening on ' + env.PORT));
