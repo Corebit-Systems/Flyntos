@@ -46,6 +46,7 @@ Currently, the following partners are integrated into the monetization engine:
 3. **Localrent (Car Rentals)**
    - **Mechanism**: Generates targeted car rental links mapping arrival IATA codes dynamically to Localrent-supported country slugs (e.g. Montenegro, Cyprus, Greece, Georgia, UAE, Thailand, Turkey).
    - **Parameter Rules**: City must be passed as a valid slug pair (`city=tivat` for destination IATA 'TIV' or `city=podgorica` for destination IATA 'TGD'). Dates must be strictly formatted as `YYYY-MM-DD` (with all spaces, dots, or slashes replaced by hyphens) for `date_from` and `date_to`. Uses `subid` for tracking.
+   - **Fallback Gateway**: If the destination country is not supported by Localrent (e.g. Rome/ROM), the system automatically and transparently falls back to a global provider (Economy Bookings) using the Travelpayouts redirection protocol (`tp.media`, program ID `1301`, custom destination URL with target IATA code, formatted dates, and the custom tracking `subId`).
 4. **KiwiTaxi (Transfers)**
    - **Mechanism**: Generates a referral link for an individual transfer from the arrival airport (`destinationIata`) to popular destinations around it or to a general booking page, passing our `subId` via the `pap` parameter. Supports localized landing pages.
 5. **GetYourGuide (Experiences & Tours)**

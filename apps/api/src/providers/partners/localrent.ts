@@ -62,6 +62,34 @@ export class LocalrentAdapter extends BasePartnerAdapter {
   generateLink(context: SearchContext, subId: string): PartnerLinkResult | null {
     const dest = context.destinationIata.toUpperCase();
     const countrySlug = iataToCountrySlug[dest];
+
+    // Fallback to global car rental provider if country is not supported by Localrent
+    if (!countrySlug) {
+      const tpMarker = process.env.AVIASALES_MARKER || '547770';
+      const formatDate = (d: string) => d.replace(/[\s/.]/g, '-');
+      const searchUrl = `https://www.economybookings.com/en-US/car-rental/book?from=${dest.toLowerCase()}&to=${dest.toLowerCase()}&date_from=${formatDate(context.departureDate)}${context.returnDate ? `&date_to=${formatDate(context.returnDate)}` : ''}`;
+      
+      const tpParams = new URLSearchParams();
+      tpParams.set('marker', tpMarker);
+      tpParams.set('p', '1301'); // Economy Bookings program ID
+      tpParams.set('sub_id', subId);
+      tpParams.set('u', searchUrl);
+      
+      const fallbackDeeplink = `https://tp.media/r?${tpParams.toString()}`;
+      
+      return {
+        id: `economybookings-wl-${context.destinationIata}`,
+        partnerName: 'Economy Bookings',
+        serviceType: 'car',
+        title: 'Global Car Rental',
+        description: 'Compare best car rental deals from global brands with Economy Bookings. Save up to 40% with zero hidden fees.',
+        imageUrl: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&q=80',
+        price: 25,
+        currency: 'EUR',
+        deeplink: fallbackDeeplink,
+        logoUrl: 'https://www.economybookings.com/favicon.ico',
+      };
+    }
     
     let locationCode = '';
     if (dest === 'TIV') {
