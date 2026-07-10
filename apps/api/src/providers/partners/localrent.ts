@@ -71,7 +71,7 @@ export class LocalrentAdapter extends BasePartnerAdapter {
       
       const tpParams = new URLSearchParams();
       tpParams.set('marker', tpMarker);
-      tpParams.set('p', '1301'); // Economy Bookings program ID
+      tpParams.set('p', '2082'); // Economy Bookings promo tool ID
       tpParams.set('sub_id', subId);
       tpParams.set('u', searchUrl);
       
