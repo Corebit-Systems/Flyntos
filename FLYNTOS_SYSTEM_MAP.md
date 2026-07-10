@@ -51,7 +51,7 @@ The Web module provides a premium, "calmer route to flight discovery" user exper
 
 ## 6. Internationalization (I18n)
 Flyntos is built from the ground up for a global audience.
-- **Supported Locales**: `en`, `ru`, `de`, `fr`, `pl`, `be`, `uk`.
+- **Supported Locales**: `en`, `ru`, `es`, `ar` (Active UI Locales).
 - **Mechanism**: Next.js App Router dynamic segments `[locale]`.
 - **Search Logic**: The backend intelligently searches airport and city names in the user's selected locale. If an exact match is missing, it automatically falls back to English (`en`).
 
