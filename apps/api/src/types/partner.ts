@@ -2,7 +2,7 @@ export interface SearchContext {
   originIata: string;
   destinationIata: string;
   departureDate: string; // YYYY-MM-DD
-  returnDate?: string;   // YYYY-MM-DD
+  returnDate?: string | undefined;   // YYYY-MM-DD
   passengers: number;
   locale: string;
 }
