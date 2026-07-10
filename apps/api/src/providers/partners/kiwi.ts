@@ -3,7 +3,7 @@ import { BasePartnerAdapter } from './base';
 
 export class KiwiAffiliateAdapter extends BasePartnerAdapter {
   // STRICT REQUIREMENT: Base affiliate URL for Kiwi integration via TPX
-  private readonly BASE_URL = 'https://kiwi.tpx.gr/foSJrpZS';
+  private readonly BASE_URL = process.env.KIWI_PARTNER_BASE_URL || 'https://kiwi.tpx.gr/foSJrpZS';
 
   generateLink(context: SearchContext, subId: string): PartnerLinkResult | null {
     const params = new URLSearchParams();

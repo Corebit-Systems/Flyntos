@@ -21,6 +21,10 @@ export class LocalrentAdapter extends BasePartnerAdapter {
     
     // Partner subId tracking
     params.set('subid', subId);
+    
+    // Core affiliate tracking ID
+    const trackingId = process.env.LOCALRENT_TRACKING_ID || 'default_tracking';
+    params.set('a', trackingId); // 'a' is a common affiliate tracking param for some networks, just using it as an example
 
     const deeplink = `https://localrent.com/montenegro/?${params.toString()}`;
 
