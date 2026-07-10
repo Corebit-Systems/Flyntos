@@ -197,7 +197,7 @@ export default async function ResultsPage({
           
           <FlightResultsView initialOffers={generateMockFlights(safeOrigin, safeDestination)} />
 
-          <ResultsTabs dict={dict} destinationName={destinationName} originCode={safeOrigin} destinationCode={safeDestination} departDate={safeDepartDate} />
+          <ResultsTabs dict={dict} destinationName={destinationName} originCode={safeOrigin} destinationCode={safeDestination} departDate={safeDepartDate} returnDate={safeReturnDate} />
         </div>
       )}
     </div>

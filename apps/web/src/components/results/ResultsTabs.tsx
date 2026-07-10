@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { CarResultsView } from './CarResultsView';
 
 interface ResultsTabsProps {
   dict?: any;
@@ -9,6 +10,7 @@ interface ResultsTabsProps {
   originCode?: string;
   destinationCode?: string;
   departDate?: string;
+  returnDate?: string;
 }
 
 export function ResultsTabs({ 
@@ -16,7 +18,8 @@ export function ResultsTabs({
   destinationName = '...', 
   originCode = '', 
   destinationCode = '', 
-  departDate = '' 
+  departDate = '',
+  returnDate = ''
 }: ResultsTabsProps) {
   const [currentTab, setCurrentTab] = useState<'cars' | 'extras'>('cars');
   const apiBase = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/$/, '');
@@ -118,60 +121,14 @@ export function ResultsTabs({
                 <p className="text-xs text-neutral-500 mt-1">{rp.transportSubtitle}</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                
-                {/* Car 1 */}
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl">
-                  <div>
-                    <div 
-                      className="w-full h-32 bg-cover bg-center rounded-xl mb-4" 
-                      style={{ backgroundImage: "url('https://images.unsplash.com/photo-1549317661-bd32c8ce0be2?w=800&q=80')" }}
-                    />
-                    <h4 className="text-lg font-bold text-white mb-2">Compact SUV</h4>
-                    <p className="text-xs font-bold text-neutral-300 mb-2">Nissan Qashqai / Kia Sportage</p>
-                    <p className="text-xs text-neutral-400 mb-4 line-clamp-3">{rp.cars.optimalDesc}</p>
-                    <div className="text-xl font-bold text-emerald-400 mb-6">{rp.cars.optimalPrice}</div>
-                  </div>
-                  <a href={`${apiBase}/out/autoeurope?from=${originCode}&to=${destinationCode}&date=${departDate}`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
-                    {rp.cars.optimalBtn.replace('{city}', destinationName)}
-                  </a>
-                </div>
-
-                {/* Car 2 */}
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl">
-                  <div>
-                    <div 
-                      className="w-full h-32 bg-cover bg-center rounded-xl mb-4" 
-                      style={{ backgroundImage: "url('https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=800&q=80')" }}
-                    />
-                    <h4 className="text-lg font-bold text-white mb-2">{rp.cars.budgetTitle}</h4>
-                    <p className="text-xs font-bold text-neutral-300 mb-2">Fiat 500 / Hyundai i20</p>
-                    <p className="text-xs text-neutral-400 mb-4 line-clamp-3">{rp.cars.budgetDesc}</p>
-                    <div className="text-xl font-bold text-emerald-400 mb-6">{rp.cars.budgetPrice}</div>
-                  </div>
-                  <a href={`${apiBase}/out/autoeurope?from=${originCode}&to=${destinationCode}&date=${departDate}`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
-                    {rp.cars.budgetBtn.replace('{city}', destinationName)}
-                  </a>
-                </div>
-
-                {/* Yacht 1 */}
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 flex flex-col justify-between hover:border-blue-500/30 transition-all shadow-xl">
-                  <div>
-                    <div 
-                      className="w-full h-32 bg-cover bg-center rounded-xl mb-4" 
-                      style={{ backgroundImage: "url('https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?w=800&q=80')" }}
-                    />
-                    <h4 className="text-lg font-bold text-white mb-2">{rp.cars.yachtTitle}</h4>
-                    <p className="text-xs font-bold text-neutral-300 mb-2">Lagoon 40 / Dufour 460</p>
-                    <p className="text-xs text-neutral-400 mb-4 line-clamp-3">{rp.cars.yachtDesc}</p>
-                    <div className="text-xl font-bold text-emerald-400 mb-6">{rp.cars.yachtPrice}</div>
-                  </div>
-                  <a href={`${apiBase}/out/searadar?from=${originCode}&to=${destinationCode}&date=${departDate}`} target="_blank" rel="noopener noreferrer" className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-[0.98] cursor-pointer text-center block">
-                    {rp.cars.yachtBtn.replace('{city}', destinationName)}
-                  </a>
-                </div>
-
-              </div>
+              <CarResultsView 
+                dict={dict} 
+                originCode={originCode} 
+                destinationCode={destinationCode} 
+                destinationName={destinationName}
+                departDate={departDate} 
+                returnDate={returnDate} 
+              />
 
             </motion.div>
           )}
